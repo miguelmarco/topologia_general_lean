@@ -22,6 +22,115 @@ formada por uno o más objetivos. Para cada objetivo se ven las hipótesis que s
 
 Cada táctica cambia el estado del objetivo, según unas reglas. Al final, el objetivo debería quedar resuelto.
 
+Vamos a ver algunos ejemplos:
+
+En este vamos a ver que dos formas equivalentes de afirmar que dos afirmaciones implican
+una tercera. Asumimos que `P`, `Q` y `R` son proposiciones
+-/
+lemma equivalencia_implicacion (P Q R : Prop) : (P ∧ Q → R) ↔ (P → Q → R) :=
+begin
+  split, -- como queremos demostrar una equivalencia, la separamos en dos implicaciones
+  {   -- estas llaves las usamos para trabajar por separado en cada sub-objetivo
+    intro h,  -- asumimos el antecedente como hipótesis, a la que llamaremos `h`
+    intro hp,  -- asumimos que se cumple `P`, y a esa afirmación la llamamos `hp`
+    intro hq,  -- asumimos que se cumple `Q`, y a esa afirmación la llamamos `hq`
+    apply h, -- como queremos demostrar que  se cumple`R`, aplicamos una hipótesis que lo implica
+    split,  -- hemos pasado a tener que demostrar algo de la forma `∧`, así que de nuevo lo separamos en dos
+    {
+      exact hp, -- tenemos una hipótesis que dice justo lo que queremos ver, 
+    },
+    {
+      exact hq,
+    },
+  },
+  {
+    intro h,
+    intro h2,
+    cases h2 with hp hq,  -- como tenemos una hipótesis de tipo `∧`, podemos separarla en dos
+    apply h,
+    {
+      exact hp,
+    },
+    {
+      exact hq,
+    }
+  }
+end
+
+-- Veamos otro ejemplo similar, pero con `∨`
+lemma ejer_1 (P Q R : Prop) :  (P → Q) ∨ (P → R) → (P  → (Q ∨ R))  :=
+begin
+  intro h,   -- introducimos la hipótesis
+  cases h,  -- al tener una hipótesis  de tipo `∨`, con `cases` separamos en dos casos posibles
+  {
+    intro hp, 
+    left,   -- si tenemos que demostrar un objetivo de tipo `∨`, con `left` decimos que vamos a ver la opción de la izquierda
+    apply h,
+    exact hp,
+  },
+  {
+    intro hp,
+    right,   -- con `right` decimos que vamos a demostrar la opción de la izquierda
+    apply h,
+    exact hp,
+  },
+end
+
+/-
+# Conjuntos
+
+Los conjuntos en Lean son homogéneos: sus elementos tienen el mismo *tipo*. Podemos pensar
+en el tipo como un "conjunto ambiente", dentro del cual consideramos subconjuntos.
+
+Una táctica útil con conjuntos es `ext`. Aplica el principio de extensionalidad: dos conjuntos
+son iguales si un elemento pertenece a uno si y sólo si pertenece al otro
+
+Algunos ejemplos de cómo tratar con connuntos.
+-/
+lemma union_conmuta (X : Type) (A B : set X) : A ∪ B = B ∪ A :=
+begin
+  ext x, -- pasamos a ver que un elemento x pertenece a uno si y sólo si pertenece al otro.
+  split,
+  {
+    intro h,
+    cases h,  -- pertenecer a una unión de dos conjuntos es lo mismo que pertenecer a uno o al otro
+    {         -- así que podemos usar `cases` en la hipótesis igual que con `∨`
+      right, -- y podemos usar `left`o `right` en el objetivo
+      exact h,
+    },
+    {
+      left,
+      exact h,
+    }
+  },
+  {
+    sorry,  -- esta tácica demuestra cualquier cosa, pero dejando el aviso de que no está realmente demostrado
+    -- # Ejercicio:
+    -- terminar este caso sin usar `sorry`
+  }
+end
+
+/-
+# Ejercicio:
+Demostrar que la intersección también conmuta
+Notar que, al igual que pertenecer a una unión es internamente una afirmación de tipo `∨`, pertenecer
+a una intersección es de tipo `∧`.
+
+-/
+lemma interseccion_conmuta (X : Type) (A B : set X) : A ∩ B = B ∩ A :=
+begin
+  sorry,
+end
+
+
+/-
+El conjunto formado por todos los elementos de un tipo se llama `univ`, y el formado por ninguno,
+se llama `∅`. Como se usa el mismo nombre independientemente del tipo, Lean intenta deducir
+a qué tipo nos estamos refiriendo, pero a veces se lo tenemos que especificar. Así, escribir
+`(univ : set X)` se refiere al conjunto formado por todos los objetos de tipo `X`,
+y `(∅ : set X)` se refiere al subconjunto de `X` formado por ningún elemento. 
+
+
 Vemos algunos ejemplos de lemas que luego usaremos
 
 En este ejemplo, `contenido_sii_interseccion_compl_vacio` va a ser el nombre que le damos al lema.
@@ -56,9 +165,65 @@ begin   -- vemos que hay que demostrar un si y sólo si
   }
 end
 
+/-
+# Uniones e intersecciones de familias
 
--- La intersección de dos conjuntos se denota con `U ∩ V`, mientras que la intersección de 
--- todos los miembros de una familia, se denota con `⋃₀`.
+Si tenemos una familia de subconjuntos (es decir, algo del tipo `set (set X)` ),
+la intersección de todos sus miembros se denota con `⋃₀`, y la unión de todos ellos
+como `⋃₀`.
+
+Veamos cómo son internamente estos conceptos:
+-/
+lemma ejer_2 (X : Type) (F : set (set X)) (x : X) : x ∈ ⋃₀ F ↔ ∃ (U ∈ F), x ∈ U :=
+begin
+  refl,    -- esta táctica comprueba que una igualdad se da **por definición**
+end
+
+lemma ejer_3 (X : Type) (F : set (set X)) (x : X) : x ∈ ⋂₀ F ↔ ∀  (U ∈ F), x ∈ U :=
+begin
+  refl,
+end
+
+/-
+Si tenemos una hipótesis de tipo `∃`, la táctica `cases` nos la separa en dos partes:
+el objeto cuya existencia nos asegura, y la propiedad que cumple dicho objeto.
+
+Para demostrar un objetivo de tipo `∃`, podemos dar expresamente el objeto que existe,
+con `use`,  y luego demostrar la propiedad que debe cumplir.
+
+
+Una hipótesis de tipo `∀`, se puede aplicar a un caso concreto usando `specialize`.
+Para demostrar un objetivo de este tipo, podemos usar `intro` para tomar un elemento
+genérico y dmostrar la propiedad aplicada a ese elemento concreto.
+
+Veamos ejemplos.
+-/
+
+lemma ejer_4 (X :Type) (F G: set (set X)) (hFG : F ⊆ G) : ⋃₀ F   ⊆ ⋃₀ G :=
+begin
+  intro x,
+  intro hx,
+  cases hx with U hU,    -- como estar en la unión es en el fondo un ∃, podemos usar `cases`
+  cases hU with hFU hxU,
+  use U,                 -- para demostrar que algo existe, usamos el conjunto S.
+  split,
+  {
+    apply hFG,
+    exact hFU,
+  },
+  {
+    exact hxU,
+  }
+end
+
+-- # Ejercicio
+-- (pista: usar `intro` y `specialize` )
+lemma ejer_5 (X :Type) (F G: set (set X)) (hFG : F ⊆ G) : ⋂₀ G   ⊆ ⋂₀ F :=
+begin
+  sorry,
+end
+
+
 -- Un subconjunto se puede dar por extensión (listando sus elementos entre llaves)
 lemma interseccion_2_eq {X : Type}  ( U V : set X) : U ∩ V = ⋂₀ {U,V} :=
 begin
@@ -130,53 +295,15 @@ begin
   }
 end
 
+/-
+# Ejercicio:
+
+Demostrar el análogo para uniones
+-/
+
 lemma propiedad_union_finita (X : Type) (P : set X → Prop) (htot : P ∅ ): 
 (∀ U V : set X, P U → P V → P (U ∪ V)) ↔ ∀ F : set (set X), set.finite F → F ⊆ P → P ⋃₀ F :=
 begin
-  split,
-  {
-    intros h F hFfin,
-    apply set.finite.induction_on hFfin,
-    {
-      simp only [empty_subset, sUnion_empty, forall_true_left, htot],
-    },
-    {
-      intros A S hAS hSfin hSP hASP,
-      simp only [set.sUnion_insert],
-      apply h,
-      {
-        apply hASP,
-        simp only [set.mem_insert_iff, true_or, eq_self_iff_true],
-      },
-      {
-        apply hSP,
-        intros x hx,
-        apply hASP,
-        right,
-        exact hx,
-      }
-    }
-  },
-  {
-    intros h U V hU hV,
-    rw union_2_eq,
-    apply h,
-    {
-      simp only [finite.insert, finite_singleton],
-    },
-    {
-      intros x hx,
-      cases hx,
-      {
-        rw hx,
-        assumption,
-      },
-      {
-        simp only [set.mem_singleton_iff] at hx,
-        rw hx,
-        exact hV,
-      }
-    }
-  }
+  sorry,
 end
 
