@@ -24,6 +24,7 @@ Esta estructura está formada por
 
 La forma de representar este tipo de estructuras es mediante una **clase**:
 -/
+
 namespace topologicos
 
 class espacio_topologico (X : Type) :=
@@ -39,12 +40,12 @@ open espacio_topologico -- así podemos  escribir `abiertos` en lugar de `espaci
 
 -- por comodidad, definimos la propiedad de ser abierto como pertenecer al conjunto de abiertos
 -- (internamente, Lean los trata igual)
-def abierto {X : Type} [espacio_topologico X] (U : set X) := U ∈ (abiertos  : set (set X))
+def abierto {X : Type} [T:espacio_topologico X] (U : set X) := U ∈ T.abiertos
 
 
 -- y demostrar este lema trivial permite al simplificador aplicar la equivalencia automáticamente
 @[simp]
-lemma abierto_def  {X : Type} [espacio_topologico X] (U : set X) : abierto U ↔ U ∈ (abiertos : set (set X)) :=
+lemma abierto_def  {X : Type} [T:espacio_topologico X] (U : set X) : abierto U ↔ U ∈ T.abiertos:=
 begin
   refl,
 end
@@ -55,7 +56,21 @@ begin
   simp only [set.sInter_insert, set.sInter_singleton],
 end
 
+lemma union_2_eq {X : Type} (U V : set X) : U ∪ V  = ⋃₀ {U,V} :=
+begin
+  simp only [sUnion_insert, sUnion_singleton],
+end
 
+lemma abierto_union_2 {X : Type} [espacio_topologico X] (U V : set X) (hU :abierto U) (hV : abierto V) :
+abierto (U ∪ V) :=
+begin
+  rw union_2_eq,
+  apply abierto_union,
+  intros S hS,
+  simp only [mem_insert_iff, mem_singleton_iff] at hS,
+  cases hS,
+  repeat {rw hS, assumption,},
+end
 
 lemma abierto_interseccion_2 {X : Type} [espacio_topologico X]  (U V : set X) (hU : abierto U)  (hV : abierto V) :
 abierto (U ∩ V) :=
@@ -91,6 +106,8 @@ lemma cerrados_def {X : Type} [espacio_topologico X] (C : set X) : C ∈ (cerrad
 begin
   refl,
 end
+
+
 
 lemma cerrado_univ {X : Type} [espacio_topologico X] : cerrado (univ : set X) :=
 begin

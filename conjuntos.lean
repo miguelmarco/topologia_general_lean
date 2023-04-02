@@ -1,6 +1,7 @@
 import data.set.basic
 import tactic
 
+
 open set
 
 /-
@@ -165,6 +166,22 @@ begin   -- vemos que hay que demostrar un si y sólo si
   }
 end
 
+lemma union_contenida_union (X : Type) (A B C D : set X) (h1 : A ⊆ C) (h2 : B ⊆ D) : A ∪ B ⊆ C ∪ D :=
+begin
+  intros x hx,
+  cases hx,
+  {
+    left,
+    apply h1,
+    exact hx,
+  },
+  {
+    right,
+    apply h2,
+    exact hx,
+  }
+end
+
 /-
 # Uniones e intersecciones de familias
 
@@ -304,6 +321,157 @@ Demostrar el análogo para uniones
 lemma propiedad_union_finita (X : Type) (P : set X → Prop) (htot : P ∅ ): 
 (∀ U V : set X, P U → P V → P (U ∪ V)) ↔ ∀ F : set (set X), set.finite F → F ⊆ P → P ⋃₀ F :=
 begin
-  sorry,
+
+  split,
+  {
+    intro h2,
+    intros F hF,
+    revert htot,
+    apply set.finite.induction_on hF,
+    {
+      simp,
+    },
+    {
+      intros U S hU hSf hind,
+      intros pO hUS,
+      specialize hind pO,
+      simp only [sUnion_insert],
+      apply h2,
+      {
+        apply hUS,
+        simp only [mem_insert_iff, eq_self_iff_true, true_or],
+      },
+      {
+        apply hind,
+        refine subset_trans _ hUS,
+        simp only [subset_insert],
+      }
+    }
+  },
+  {
+    intro h,
+    intros U V hU hV,
+    specialize h {U,V},
+    simp only [finite.insert, finite_singleton, sUnion_insert, sUnion_singleton, forall_true_left] at h,
+    apply h,
+    intros x hx,
+    induction hx,
+    {
+      induction hx,
+      exact hU,
+    },
+    {
+      induction hx,
+      exact hV,
+    }
+  }
+end
+
+lemma doble_contenido (X : Type) (A B : set X) (h1 : A ⊆ B) (h2 : B ⊆ A) : A = B :=
+begin
+  ext,
+  split,
+  {
+    intro h,
+    apply h1,
+    exact h,
+  },
+  {
+    intro h,
+    apply h2,
+    exact h,
+  }
+end
+
+lemma union_contenido (X : Type) (A B C : set X) : A ∪ B ⊆ C ↔ A ⊆ C ∧ B ⊆ C :=
+begin
+  split,
+  {
+    intro h,
+    split,
+    {
+      intros x hx,
+      apply h,
+      left,
+      exact hx,
+    },
+    {
+      intros x hx,
+      apply h,
+      right,
+      exact hx,
+    }
+  },
+  {
+    intro h,
+    cases h with hA hB,
+    intros x hx,
+    cases hx,
+    {
+      apply hA,
+      exact hx,
+    },
+    {
+      apply hB,
+      exact hx,
+    }
+  }
+end
+
+
+lemma contenido_interseccion (X : Type) (A B C : set X) : A  ⊆ (B ∩ C) ↔ A ⊆ B ∧ A ⊆ C :=
+begin
+  split,
+  {
+    intro h,
+    split,
+    repeat  {
+      intros x hx,
+      specialize h hx,
+      cases h with h1 h2,
+      assumption,
+    },
+  },
+  {
+    intro h,
+    cases h with hB hC,
+    intros x hx,
+    split,
+    {
+      apply hB hx,
+    },
+    {
+      exact hC hx,
+    }
+  }
+end
+
+lemma contenido_en_union_izqda (X : Type) (A B : set X) : A ⊆ A ∪ B :=
+begin
+  intros x hx,
+  left,
+  exact hx,
+end
+
+lemma contenido_en_union_dcha (X : Type) (A B : set X) : B ⊆ A ∪ B :=
+begin
+  intros x hx,
+  right,
+  exact hx,
+end
+
+
+lemma interseccion_contenida_izda (X : Type) (A B  : set X) : (A ∩ B ) ⊆ A :=
+begin
+  intros x hx,
+  cases hx with hx1 hx2,
+  exact hx1,
+end
+
+lemma interseccion_contenida_derecha (X : Type) (A B  : set X) : (A ∩ B ) ⊆ B :=
+begin
+  intros x hx,
+  cases hx with hx1 hx2,
+  exact hx2,
 end
 
