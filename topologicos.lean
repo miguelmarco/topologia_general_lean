@@ -150,6 +150,25 @@ begin
   assumption,
 end
 
+lemma cerrado_union_finita  {X : Type} [espacio_topologico X] (F : set (set X)) (hf : F ⊆ cerrados)  (hfin : set.finite F):
+cerrado ⋃₀ F :=
+begin
+  apply set.finite.induction_on' hfin,
+  {
+    simp,
+    exact abierto_total,
+  },
+  {
+    intros a S ha hS haS hind,
+    simp only [sUnion_insert],
+    apply cerrado_union,
+    {
+      apply hf,
+      exact ha,
+    },
+    apply hind,
+  }
+end
 
 
 def topologia_metrico {X : Type} [metricos.espacio_metrico X] : espacio_topologico X :=
@@ -267,12 +286,13 @@ def discreta (X : Type) : espacio_topologico X :=
   end
 }
 
+
 def indiscreta (X : Type) : espacio_topologico X :=
-{ abiertos := {x : set X | x = ∅  ∨ x = univ},
+{ abiertos := {∅ , univ },
   abierto_total := 
   begin
-    right, 
-    refl
+    right,
+    simp,
   end,
   abierto_vacio := 
   begin
@@ -285,6 +305,7 @@ def indiscreta (X : Type) : espacio_topologico X :=
     by_cases hF : univ ∈ F,
     {
       right,
+      simp only [set.mem_singleton_iff],
       ext,
       simp only [set.mem_univ, set.mem_sUnion, iff_true],
       use univ,
@@ -302,6 +323,7 @@ def indiscreta (X : Type) : espacio_topologico X :=
         exact hx,
       },
       {
+        simp only [set.mem_singleton_iff] at h,
         rw h at hU,
         apply hF hU,
       }
@@ -320,17 +342,22 @@ def indiscreta (X : Type) : espacio_topologico X :=
     },
     {
       right,
-      rw sInter_eq_univ,
-      intros U hU,
-      specialize hF hU,
+      rw mem_singleton_iff,
+      ext,
+      simp,
+      intros S hS,
+      specialize hF hS,
+      simp only [set.mem_insert_iff, set.mem_singleton_iff] at hF,
       cases hF,
       {
-        rw ← hF at hem,
-        tauto,
+        rw hF at hS,
+        by_contradiction,
+        apply hem hS,
       },
       {
-        assumption,
-      },
+        rw hF,
+        triv,
+      }
     }
   end
 }
@@ -455,6 +482,7 @@ begin
     apply abierto_vacio,
   },
   {
+    simp only [set.mem_singleton_iff] at hU,
     rw hU,
     exact abierto_total,
   }

@@ -18,7 +18,7 @@ la estructura básica del enunciado es:
 la demostración generalmente se escribe es una secuencia de *tácticas* entre `begin`y `end`.
 
 Si ponemos el cursor en un punto en el bloque de tácticas, vemos a la deerecha el estado de la demustración,
-formada por uno o más objetivos. Para cada objetivo se ven las hipótesis que se dan por conocidas 
+formada por uno o más objetivos. Para cada objetivo se ven las hipótesis que se dan por conocidas
 (y los objetos involucrados), y debajo la tésis a probar.
 
 Cada táctica cambia el estado del objetivo, según unas reglas. Al final, el objetivo debería quedar resuelto.
@@ -38,7 +38,7 @@ begin
     apply h, -- como queremos demostrar que  se cumple`R`, aplicamos una hipótesis que lo implica
     split,  -- hemos pasado a tener que demostrar algo de la forma `∧`, así que de nuevo lo separamos en dos
     {
-      exact hp, -- tenemos una hipótesis que dice justo lo que queremos ver, 
+      exact hp, -- tenemos una hipótesis que dice justo lo que queremos ver,
     },
     {
       exact hq,
@@ -64,7 +64,7 @@ begin
   intro h,   -- introducimos la hipótesis
   cases h,  -- al tener una hipótesis  de tipo `∨`, con `cases` separamos en dos casos posibles
   {
-    intro hp, 
+    intro hp,
     left,   -- si tenemos que demostrar un objetivo de tipo `∨`, con `left` decimos que vamos a ver la opción de la izquierda
     apply h,
     exact hp,
@@ -129,7 +129,7 @@ El conjunto formado por todos los elementos de un tipo se llama `univ`, y el for
 se llama `∅`. Como se usa el mismo nombre independientemente del tipo, Lean intenta deducir
 a qué tipo nos estamos refiriendo, pero a veces se lo tenemos que especificar. Así, escribir
 `(univ : set X)` se refiere al conjunto formado por todos los objetos de tipo `X`,
-y `(∅ : set X)` se refiere al subconjunto de `X` formado por ningún elemento. 
+y `(∅ : set X)` se refiere al subconjunto de `X` formado por ningún elemento.
 
 
 Vemos algunos ejemplos de lemas que luego usaremos
@@ -157,7 +157,7 @@ begin   -- vemos que hay que demostrar un si y sólo si
     change x ∈ (∅ : set X),  -- por definición, que `x` esté en el conjunto vacío es falso
     rewrite ← h,      -- usamos la hipótesis h para reescribir el resultado
     split,   -- demostrar la pertenencia a una intersección también se puede separar en dos demostraciones
-    { 
+    {
       exact hx,  -- lo que hay que demostrar es exactamente una de las hipótesis
     },
     {
@@ -249,15 +249,15 @@ end
 
 lemma union_2_eq {X : Type} ( U V : set X) : U ∪ V = ⋃₀ {U,V} :=
 begin
-  simp, 
+  simp,
 end
 
 -- En este ejemplo vamos a ver cómo usar la inducción sobre conjuntos finitos
--- Esto se hace aplicando el lema `set.finite.induction_on` con la hipótesis de que el conjunto 
+-- Esto se hace aplicando el lema `set.finite.induction_on` con la hipótesis de que el conjunto
 -- es finito
 -- `P` es una propiedad que puede ser cierta o no para cada subconjunto de `X`
 -- `univ` es el subconjunto total
-lemma propiedad_interseccion_finita (X : Type) (P : set X → Prop) (htot : P univ): 
+lemma propiedad_interseccion_finita (X : Type) (P : set X → Prop) (htot : P univ):
 (∀ U V : set X, P U → P V → P (U ∩ V)) ↔ ∀ F : set (set X), set.finite F → F ⊆ P → P ⋂₀ F :=
 begin
   split,  -- como antes, separamos una doble implicación en dos
@@ -269,7 +269,7 @@ begin
       simp,   -- que en este caso, es fácil
       exact htot,
     },
-    {  
+    {
       /-
         En el objetivo vemos que aparece `insert a s`, esto es el conjunto que se  obtiene al añadir
         al conjunto `s` el elemento `a`
@@ -301,9 +301,9 @@ begin
     simp at hx,     -- cuando una hipótesis está formada de varias opciones, `cases` la separa en casos
                     -- si fuera un ∧, nos daría dos hipótesis en lugar de dos objetivos
     cases hx,
-    { 
+    {
       rw hx,
-      exact hU,  
+      exact hU,
     },
     {
       rw hx,
@@ -318,7 +318,7 @@ end
 Demostrar el análogo para uniones
 -/
 
-lemma propiedad_union_finita (X : Type) (P : set X → Prop) (htot : P ∅ ): 
+lemma propiedad_union_finita (X : Type) (P : set X → Prop) (htot : P ∅ ):
 (∀ U V : set X, P U → P V → P (U ∪ V)) ↔ ∀ F : set (set X), set.finite F → F ⊆ P → P ⋃₀ F :=
 begin
 
@@ -326,15 +326,15 @@ begin
   {
     intro h2,
     intros F hF,
-    revert htot,
+    --revert htot,
     apply set.finite.induction_on hF,
     {
-      simp,
+      simp [htot],
     },
     {
       intros U S hU hSf hind,
-      intros pO hUS,
-      specialize hind pO,
+      intros  hUS,
+      specialize hind,
       simp only [sUnion_insert],
       apply h2,
       {
