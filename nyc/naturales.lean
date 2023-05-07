@@ -1,10 +1,6 @@
 import tactic
-import data.finset
-import algebra.big_operators
-import init.data.nat.div
 
-
-open finset nat
+open nat finset
 open_locale big_operators
 
 /-
@@ -31,6 +27,8 @@ Tamién es útil, cuando queremos demostrar igualdades que se obtienen símpleme
 manipulando sumas y productos en un anillo, usar la táctica `ring`.
 -/
 
+@[simp]
+lemma succ_eq_mas1 (n : ℕ ): n.succ = n + 1 := rfl
 
 -- Demostremos la fórmula para la suma de los cubos de los primeros números
 lemma ejer1 ( n : ℕ ) : (∑ i in range (n + 1), i ^3) * 4  = ((n * (n + 1)  ))^2 :=
@@ -41,7 +39,7 @@ begin
   },
   {                         -- caso n + 1, suponiendo cierto el caso n
     rw sum_range_succ,      -- separamos el último sumando del sumatorio
-    change n.succ with n+1, -- reescribimos usando operaciones en lugar de siguientes
+    simp only [succ_eq_mas1],-- reescribimos usando operaciones en lugar de siguientes
     rw add_mul,             -- aplicamos la distributiva, para tener exactamente
                             -- la misma expresión que en la hipótesis de inducción 
     rw hind,                -- aplicamos la hipótesis de inducción
