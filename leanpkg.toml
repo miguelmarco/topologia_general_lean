@@ -1,0 +1,8 @@
+[package]
+name = "practicas-topologia"
+version = "0.1"
+lean_version = "leanprover-community/lean:3.50.3"
+path = "src"
+
+[dependencies]
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "f252872231e87a5db80d9938fc05530e70f23a94"}
