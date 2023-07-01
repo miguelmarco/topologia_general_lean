@@ -42,7 +42,7 @@ begin
  exact hq,
 end
 
--- La táctica `apply`se puede usar cuando tenemos como hipótesis una implicación `h`
+-- La táctica `apply` se puede usar cuando tenemos como hipótesis una implicación `h`
 -- que implica nuestro objetivo. Al usarla, el objetivo cambia y pasamos a tener que
 -- demostrar la premisa de `h`
 
@@ -123,7 +123,7 @@ begin
 end
 
 -- Si tenemos una hipótesis de implicación `h : P → Q`, y otra que nos da la premisa, `hp : P`,
--- podemos convertir la primera en un el consecuente con `specialize` 
+-- podemos convertir la primera en una del consecuente con `specialize` 
 example  (P Q : Prop) (h : P → Q) (hp : P) : Q :=
 begin
   specialize h hp,
