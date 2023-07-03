@@ -24,6 +24,23 @@ Lo que tiene sentido es  `a : X` y `a ∈ A`.
 
 open set  -- así podemos usar cosas como `univ` en lugar de `set.univ`
 
+-- dos conjuntos son iguales si y sólo si los elementos de uno son del otro y viceversa
+-- esto en particular, permite demostrar el principio del doble contenido
+lemma doble_contenido {X : Type} (A B : set X) (h1 : A ⊆ B) (h2 : B ⊆ A) : A = B :=
+begin
+  ext x,  -- tomamos un elemento, y veamos que esté en A sii está en B
+  split,  -- separamos en dos implicaciones
+  {
+    intro hx,  -- asumimos la hipótesis de la implicación
+    specialize h1 hx,  -- como `A ⊆ B`, un elemento de `A` está en `B`.
+    exact h1,
+  },
+  {
+    intro hx,  -- ahora vamos a usar otro enfoque:
+    apply h2,  -- en lugar de especializar la hipótesis, vamos "hacia atrás" desde la tésis
+    exact hx,
+  }
+end
 
 -- por definición, siempre es falso que un elemento pertenezca al vacío
 lemma vacio_defin {X : Type} : (∅ : set X) = {x : X | false} :=
@@ -31,7 +48,7 @@ begin
   refl,  -- la táctica `refl` comprueba que una igualdad se cumple por definición
 end
 
--- el subconjunto total, es decir, el formado por todos los elementos de `X` se llama `univ`.
+-- el subconjunto formado por todos los elementos de `X` se llama `univ`.
 -- por definición, todos los elementos de tipo `X` pertenecen a `univ`
 lemma total_defin {X : Type} : (univ : set X) = {x : X | true} :=
 begin
@@ -65,7 +82,8 @@ end
 
 -- un conjunto `A` es el vacío si y solo si es falso que cualquier
 -- elemento le pertenezca
-lemma conjunto_vacio_sii_todo_elemento_no {X : Type} (A : set X) : A = ∅ ↔ ∀ x : X, ¬(x ∈ A) :=
+lemma conjunto_vacio_sii_todo_elemento_no {X : Type} (A : set X) :
+ A = ∅ ↔ ∀ x : X, ¬(x ∈ A) :=
 begin
   split,
   {
@@ -112,12 +130,12 @@ begin
   split,
   {
     intro h, 
-    intro x, dsimp,
+    intros x, dsimp,
     intro ha, 
     by_contradiction hb,  -- si queremos demostrar algo por reducción al absurdo,
     -- `by_contradiction` asume la negación del resultado como hipótesis,
     -- y pasamos a demostrar `false` (es decir, que hay contradicción)
-    specialize h x,   -- aplicamos `h` a `x`
+    specialize h x,
     apply h,
     split,
     exact ha, exact hb,
@@ -168,9 +186,7 @@ begin
 end
 
 
-/-
-# Ejercicios
--/
+
 example {X : Type} (A B : set X) : A ⊆ B ↔ A ∩ B = A :=
 begin
   sorry,
@@ -191,61 +207,6 @@ begin
   sorry,
 end
 
-
-/-
-Algunas fórmulas con uniones e intersecciones
--/
-variables (X : Type) (A B C : set X)
-
-example : A ∪ A = A :=
-begin
-  sorry
-end
-
-example : A ∩ A = A :=
-begin
-  sorry
-end
-
-example : A ∩ ∅ = ∅ :=
-begin
-  sorry
-end
-
-example : A ∪ univ = univ :=
-begin
-  sorry
-end
-
-example : A ⊆ B → B ⊆ A → A = B :=
-begin
-  sorry
-end
-
-example : A ∩ B = B ∩ A :=
-begin
-  sorry
-end
-
-example : A ∩ (B ∩ C) = (A ∩ B) ∩ C :=
-begin
-  sorry
-end
-
-example : A ∪ (B ∪ C) = (A ∪ B) ∪ C :=
-begin
-  sorry
-end
-
-example : A ∪ (B ∩ C) = (A ∪ B) ∩ (A ∪ C) :=
-begin
-  sorry,
-end
-
-example : A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C) :=
-begin
-  sorry,
-end
 
 
 /-
@@ -350,9 +311,10 @@ Esto se hace con la sintaxis `{x1, x2, x3}`. Internamente, estos conjuntos está
 empezando con un `singleton` (un conjunto que tiene un único elemento), y sobre
 ese conjunto ir realizando la operación `insert` (agregar un elemento a un conjunto)
 
-La táctica `unfold` desarrolla una definición.
 -/
 
+
+@[simp]
 lemma union_familia_dos_conjuntos (X : Type) (A B : set X) :  ⋃₀ {A,B} = A ∪ B :=
 begin
   unfold insert,
@@ -410,24 +372,9 @@ end
 @[simp]
 lemma interseccion_familia_dos_conjuntos (X : Type) (A B : set X) :  ⋂₀ {A,B} = A ∩ B :=
 begin
+  ext,
   simp,
 end
-
-/-
-## Ejercicios 
-(puede ser útil usar `simp` si veis que aparecen expresiones "raras")
--/
-
-example (X : Type) (F1 F2 : set (set X)) : (⋃₀ F1) ∩  (⋃₀ F2) = ⋃ (a ∈ F1) (b ∈ F2), a ∩ b :=
-begin
-  sorry,
-end
-
-example (X : Type) (A : set X) (F : set (set X)) (hF : ∃ C, (C ∈ F)) : A ∩ (⋂₀ F) = ⋂ (B ∈ F), A ∩ B :=
-begin
-  sorry,
-end
-
 
 /-
 ## Conjuntos y funciones
@@ -501,11 +448,9 @@ begin
   sorry,
 end
 
-
-
 -- La unión de las imágenes es la imagen de la unión
 
-example (X Y : Type) (f : X → Y) (U V : set X) : f '' (U ∪ V ) = (f '' U) ∪ (f '' V ) :=
+lemma imagen_union (X Y : Type) (f : X → Y) (U V : set X) : f '' (U ∪ V) = (f '' U) ∪ (f '' V ) :=
 begin
   ext y,
   split,
@@ -538,8 +483,7 @@ begin
   }
 end
 
--- la versión para el caso de union de familias
-example (X Y : Type) (f : X → Y) (F : set (set X)) : f '' ⋃₀ F = ⋃₀ {V : set Y | ∃ U ∈ F, V = f '' U} :=
+lemma imagen_union_familia (X Y : Type) (f : X → Y) (F : set (set X)) : f '' ⋃₀ F = ⋃₀ {V : set Y | ∃ U ∈ F, V = f '' U} :=
 begin
  sorry,
 end
@@ -547,47 +491,132 @@ end
 
 
 
--- La imagén de la intersección está contenida en intersección de las imágenes
 
-example (X Y : Type) (f : X → Y) (U V : set X) : f '' (U  ∩ V ) ⊆  (f '' U) ∩  (f '' V ) :=
+
+
+
+
+
+
+
+
+
+
+-- La imagen de la intersección está contenida en intersección de las imágenes
+
+lemma imagen_interseccion (X Y : Type) (f : X → Y) (U V : set X) : f '' (U  ∩ V ) ⊆  (f '' U) ∩  (f '' V ) :=
 begin
   sorry,
 end
 
-example (X Y : Type) (f : X → Y) (F : set (set X)) : f '' ⋂₀ F ⊆ ⋂₀ {V : set Y | ∃ U ∈ F, V = f '' U} :=
+lemma imagen_interseccion_familia (X Y : Type) (f : X → Y) (F : set (set X)) : f '' ⋂₀ F ⊆ ⋂₀ {V : set Y | ∃ U ∈ F, V = f '' U} :=
 begin
   sorry,
 end
 
 -- La intersección de las preimagenes es la preimagen de la intersección
 
-example (X Y : Type) (f : X → Y) (U V : set Y) : f ⁻¹' (U  ∩ V ) = (f ⁻¹' U) ∩ (f ⁻¹' V )  :=
+lemma preimagen_interseccion (X Y : Type) (f : X → Y) (U V : set Y) : f ⁻¹' (U  ∩ V ) = (f ⁻¹' U) ∩ (f ⁻¹' V )  :=
 begin
   sorry,
 end
 
 
- -- en este ejercicio pueden aparecer expresiones complicadas, se pueden simplificar con `dsimp`
- -- en cualquier caso, también puede hacerse automáticamente con `simp`
-example (X Y : Type) (f : X → Y) (F : set (set Y)) : f ⁻¹' (⋂₀ F ) = ⋂ (V : set Y) (hV: V ∈  F), f ⁻¹' V :=
+lemma preimagen_interseccion_familia (X Y : Type) (f : X → Y) (F : set (set Y)) : f ⁻¹' (⋂₀ F ) = ⋂ (V : set Y) (hV: V ∈  F), f ⁻¹' V :=
+begin
+  sorry,
+end
+
+lemma preimagen_interseccion_familia' (X Y : Type) (f : X → Y) (F : set (set Y)) : f ⁻¹' (⋂₀ F ) = ⋂₀ { (f ⁻¹' V) | V ∈ F} :=
 begin
   sorry,
 end
 
 -- La unión de las preimagenes es la imagen de la unión
-  -- en este ocurre como en el anterior
-example (X Y : Type) (f : X → Y) (U V : set Y) :  f ⁻¹' (U  ∪ V ) = (f ⁻¹' U) ∪ (f ⁻¹' V ) :=
+
+lemma preimagen_union (X Y : Type) (f : X → Y) (U V : set Y) :  f ⁻¹' (U  ∪ V ) = (f ⁻¹' U) ∪ (f ⁻¹' V ) :=
 begin
   sorry,
 end
 
-example (X Y : Type) (f : X → Y) (F : set (set Y)) : f ⁻¹' (⋃₀ F ) = ⋃ (V : set Y) (hV: V ∈  F), f ⁻¹' V :=
+lemma preimagen_union_familia (X Y : Type) (f : X → Y) (F : set (set Y)) : f ⁻¹' (⋃₀ F ) = ⋃ (V : set Y) (hV: V ∈  F), f ⁻¹' V :=
 begin
   sorry,
 end
 
+lemma preimagen_union_familia' (X Y : Type) (f : X → Y) (F : set (set Y)) : f ⁻¹' (⋃₀ F ) = ⋃₀ {(f ⁻¹' V) | V ∈  F} :=
+begin
+  sorry,
+end
 
+-- relación entre la imagen de la preimagen de un conjunto, y el conjunto
+lemma imagen_preimagen_contenida (X Y : Type) (f : X → Y) (V : set Y) : f '' (f ⁻¹' V ) ⊆ V :=
+begin
+  sorry,
+end
 
+-- relación entre un conjunto, y la preimagen de su imagen
+lemma contenido_en_preimagen_imagen (X Y : Type) (f : X → Y) (U : set X) :
+U ⊆ f ⁻¹' (f '' U) :=
+begin
+  sorry,
+end 
+
+/-
+Algunas fórmulas con uniones e intersecciones
+-/
+
+variables (X : Type) (A B C : set X)
+
+example : A ∪ A = A :=
+begin
+  sorry
+end
+
+example : A ∩ A = A :=
+begin
+  sorry
+end
+
+example : A ∩ ∅ = ∅ :=
+begin
+  sorry
+end
+
+example : A ∪ univ = univ :=
+begin
+  sorry
+end
+
+example : A ⊆ B → B ⊆ A → A = B :=
+begin
+  sorry
+end
+
+example : A ∩ B = B ∩ A :=
+begin
+  sorry
+end
+
+example : A ∩ (B ∩ C) = (A ∩ B) ∩ C :=
+begin
+  sorry
+end
+
+example : A ∪ (B ∪ C) = (A ∪ B) ∪ C :=
+begin
+  sorry
+end
+
+example : A ∪ (B ∩ C) = (A ∪ B) ∩ (A ∪ C) :=
+begin
+  sorry,
+end
+
+example : A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C) :=
+begin
+  sorry,
+end
 
 /-
 # Subconjuntos como tipos
