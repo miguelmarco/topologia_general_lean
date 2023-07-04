@@ -2,10 +2,11 @@ import .conjuntos
 import .topologicos
 import tactic
 
-open set
-open topologicos
-open topologicos.espacio_topologico
 
+namespace topologicos
+
+open topologicos.espacio_topologico
+open set
 
 /-
 En esta sección, `X` va a ser un espacio topológico
@@ -15,126 +16,111 @@ variables {X : Type} [espacio_topologico X]
 /-
 Definimos base como una familia de abiertos que genera toda la topología mediante uniones
 -/
-def base (B : set (set X)) := 
-B ⊆ abiertos ∧ 
-∀ (U : set X), abierto U →  ∀ x ∈ U , ∃ V ∈ B, x ∈ V ∧ V ⊆ U 
+def base (ℬ : set (set X)) := 
+ℬ ⊆ abiertos ∧ 
+∀ (U : set X), abierto U →  ∃ F ⊆ ℬ, U = ⋃₀ F 
+
+lemma base_discreto : @base X (discreta X) { ({x}) | x : X} :=
+begin
+  sorry,
+end
 
 
 
-lemma caracterizacion_base (B : set (set X)) : 
-base B ↔ B ⊆ abiertos ∧ ∀ U : set X, abierto U → ∃ F ⊆ B, ⋃₀ F = U :=
+
+lemma caracterizacion_base (ℬ : set (set X)) (hB :ℬ ⊆ abiertos) : 
+base ℬ ↔  ∀ (U : set X), abierto U → ∀ x ∈ U, ∃ Bₓ ∈ ℬ, x ∈ Bₓ ∧ Bₓ ⊆ U :=
 begin
   split,
   {
-    intro h,
-    cases h with hBabiertos hBcubre,
+    intros hBbase U hU x hx,
+    cases hBbase with hBab hBF,
+    specialize hBF U hU,
+    cases hBF with ℱ hℱ,
+    cases hℱ with hℱℬ hUℱ,
+    rw  hUℱ at hx,
+    cases hx with Bₓ hBₓ,
+    cases hBₓ with hBₓℱ hxBₓ,
+    use Bₓ,
     split,
     {
-      exact hBabiertos,
+      apply hℱℬ,
+      exact hBₓℱ,
+    },
+    split,
+    {
+      exact hxBₓ,
+    },
+    {
+      rw hUℱ,
+      intros y hy,
+      use Bₓ,
+      split,
+        exact hBₓℱ,
+        exact hy,
+    }
+  },
+  {
+    intro h,
+    split,
+    {
+      exact hB,
     },
     {
       intros U hU,
-      specialize hBcubre U hU,
-      let F := {V : set X | V ∈ B ∧ V ⊆ U},
-      use F,
+      specialize h U hU,
+      use { B ∈ ℬ | B ⊆ U },
       split,
       {
-        intros V hV,
-        cases hV with hVB hVU,
-        exact hVB,
-      },
-      ext,
-      split,
-      {
-        intro h,
-        cases h with V hV,
-        cases hV with hVF hxV,
-        cases hVF with hVB hVU,
-        apply hVU,
-        apply hxV,
+        simp only [set.sep_subset],
       },
       {
-        intro hx,
-        specialize hBcubre x hx,
-        rcases hBcubre with ⟨V,hVB,hxV,hVU⟩ ,
-        use V,
+        ext x,
         split,
         {
+          intro hxU,
+          specialize h x hxU,
+          cases h with Bₓ hBₓ,
+          cases hBₓ with hBₓℬ hBₓ,
+          cases hBₓ with hxBₓ hBₓU,
+          use Bₓ,
           split,
-          {
-            exact hVB,
-          },
-          {
-            exact hVU,
-          },
+          split,
+            repeat {assumption},
         },
         {
-          exact hxV,
+          intro hx,
+          cases hx with Bₓ hBₓ,
+          cases hBₓ with hBₓ hxBₓ,
+          cases hBₓ with hBₓℬ hBₓU,
+          apply hBₓU,
+          exact hxBₓ,
         },
       },
     },
   },
-  {
-    intro h,
-    cases h with hBab hB,
-    split,
-    {
-      exact hBab,
-    },
-    {
-      intros U hUab x hxU,
-      specialize hB U hUab,
-      cases hB with F hF,
-      cases hF with hFB hFU,
-      rw ← hFU at hxU,
-      cases hxU with V hV,
-      use V,
-      cases hV with hVF hxV,
-      split,
-      {
-        apply hFB,
-        exact hVF,
-      },
-      split,
-      {
-        exact hxV,
-      },
-      {
-        rw ← hFU,
-        intros y hy,
-        use V,
-        split,
-        exact hVF,
-        exact hy,
-      }
-    }
-  }
 end
 
 def B1 {X : Type} (F : set (set X)) := ⋃₀ F = univ 
-def B2 {X : Type} (F : set (set X)) := ∀ (A B : set X), A ∈ F → B ∈ F → ∃ S : set (set X), S ⊆ F ∧ ⋃₀ S = A ∩ B 
+def B2 {X : Type} (F : set (set X)) := ∀ (A B : set X), A ∈ F → B ∈ F → ∃ S : set (set X), S ⊆ F ∧ A ∩ B = ⋃₀ S  
 
-lemma propiedades_base {X : Type} [espacio_topologico X] (B : set (set X))  (h : base B) : B1 B ∧ B2 B :=
+lemma propiedades_base {X : Type} [espacio_topologico X] ( ℬ : set (set X))  (h : base ℬ) : B1 ℬ ∧ B2 ℬ :=
 begin
   split,
   {
     unfold B1,
-    unfold base at h,
-    cases h with hBab hBbase,
-    specialize hBbase univ,
-    specialize hBbase abierto_total,
+    cases h with hBab hB,
+    specialize hB univ abierto_total,
     apply doble_contenido,
     {
       simp only [subset_univ],
     },
     {
-      intros x hx,
-      specialize hBbase x hx,
-      cases hBbase  with V hV,
-      use V,
-      cases hV with hVB hxV,
-      simp only [mem_univ, subset_univ, and_true] at *,
-      tauto,
+      cases hB with ℱ hℱ,
+      cases hℱ with hℱℬ huniv,
+      rw huniv,
+      apply sUnion_subset_sUnion,
+      exact hℱℬ,
     },
   },
   {
@@ -154,42 +140,8 @@ begin
       },
     },
     specialize hB hain,
-    use {C ∈  B | C ⊆ a ∩ b},
-    split,
-    {
-      intros C hC,
-      cases hC with hCB hC2,
-      exact hCB,
-    },
-    apply doble_contenido,
-    {
-      intros x hx,
-      cases hx with V hV,
-      cases hV with hVp hxV,
-      cases hVp with hVinC hCcontab,
-      apply hCcontab,
-      apply hxV,
-    },
-    {
-      intros x hx,
-      specialize hB x hx,
-      cases hB with V hV,
-      use V,
-      split,
-      split,
-      {
-        cases hV with hVB,
-        exact hVB,
-      },
-      {
-        cases hV,
-        exact hV_h.2,
-      },
-      {
-        cases hV,
-        exact hV_h.1,
-      }
-    }
+    simp only [exists_prop] at hB,
+    exact hB,
   },
 end
 
@@ -377,3 +329,5 @@ instance topologia_generada {X : Type} (F : set (set X)) (h1 : B1 F) (h2 : B2 F)
       },
     },
   end }
+
+end topologicos
