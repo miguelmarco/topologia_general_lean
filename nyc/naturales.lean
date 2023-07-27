@@ -47,6 +47,7 @@ begin
   }
 end
 
+
 -- Ahora podemos usar el anterior ejercicio para despejar el `4`
 lemma ejer1' ( n : ℕ ) : (∑ i in range (n.succ), i ^3)  = (n *(n + 1)) ^ 2 / 4 :=
 begin

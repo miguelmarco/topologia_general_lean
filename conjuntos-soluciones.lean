@@ -262,6 +262,42 @@ begin
 end
 
 
+
+-- SI una familia está contenida en otra, su unión está contenida en la unión de la otra
+
+lemma union_familia_contenida_solucion (X : Type) (F G : set (set X)) (h : F ⊆ G) :
+⋃₀ F ⊆ ⋃₀ G :=
+begin
+  intros x hx,
+  cases hx with U hU,
+  cases hU with hUF hxU,
+  use U,
+  split,
+  {
+    specialize h hUF,
+    exact h,
+  },
+  {
+    exact hxU,
+  }
+end
+
+
+-- y con las intersecciones ocurre al revés
+
+
+lemma interseccion_familia_contenida_solucion (X : Type) (F G : set (set X)) (h : F ⊆ G) :
+⋂₀ G ⊆ ⋂₀ F :=
+begin
+  intros x hx,
+  intros U hU,
+  apply hx,
+  apply h,
+  exact hU,
+end
+
+
+
 -- La imagen de la intersección está contenida en intersección de las imágenes
 
 example (X Y : Type) (f : X → Y) (U V : set X) : f '' (U  ∩ V ) ⊆  (f '' U) ∩  (f '' V ) :=

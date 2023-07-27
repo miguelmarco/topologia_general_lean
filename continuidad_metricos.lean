@@ -1,4 +1,5 @@
 import .metricos
+import order.complete_lattice
 import tactic
 
 namespace metricos.continuidad
@@ -245,5 +246,7 @@ begin
     linarith,
   }
 end
+
+
 
 end metricos.continuidad

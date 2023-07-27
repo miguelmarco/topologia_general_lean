@@ -34,8 +34,8 @@ class espacio_topologico (X : Type) :=
 ( abiertos : set (set X))
 ( abierto_total : (univ : set X) ∈ abiertos)
 ( abierto_vacio : ∅ ∈ abiertos)
-( abierto_union : ∀ F : set (set X), (F ⊆ abiertos → ⋃₀ F ∈ abiertos ) )
-( abierto_interseccion :   ∀ F : set (set X), (F ⊆ abiertos → F.finite →  ⋂₀ F ∈ abiertos ))
+( abierto_union : ∀ ℱ : set (set X), (ℱ ⊆ abiertos → ⋃₀ ℱ ∈ abiertos ) )
+( abierto_interseccion :  ∀ (U V : set X), U ∈ abiertos → V ∈ abiertos → U ∩ V ∈ abiertos)
 
 
 open espacio_topologico -- así podemos  escribir `abiertos` en lugar de `espacio_topologico.abiertos`
@@ -43,24 +43,25 @@ open espacio_topologico -- así podemos  escribir `abiertos` en lugar de `espaci
 
 -- por comodidad, definimos la propiedad de ser abierto como pertenecer al conjunto de abiertos
 -- (internamente, Lean los trata igual)
-def abierto {X : Type} [T:espacio_topologico X] (U : set X) := U ∈ T.abiertos
+def abierto {X : Type} [𝒯:espacio_topologico X] (U : set X) := U ∈ 𝒯.abiertos
 
 
 -- y demostrar este lema trivial permite al simplificador aplicar la equivalencia automáticamente
 @[simp]
-lemma abierto_def  {X : Type} [T:espacio_topologico X] (U : set X) : abierto U ↔ U ∈ T.abiertos:=
+lemma abierto_def  {X : Type} [𝒯:espacio_topologico X] (U : set X) : abierto U ↔ U ∈ 𝒯.abiertos:=
 begin
   refl,
 end
 
--- es fácil ver que la intersección de dos abiertos es abierto, y la unión de dos también
--- para demostrarlo, simplemente vemos que son casos particulares de familias (de dos conjuntos)
-lemma interseccion_2_eq {X : Type}  ( U V : set X) : U ∩ V = ⋂₀ {U,V} :=
+-- es fácil ver quela unión de dos abiertos también es abierto
+-- para demostrarlo, simplemente vemos que es un caso particulares de familias (de dos conjuntos)
+lemma union_2_eq {X : Type} (U V : set X) : U ∪ V  = ⋃₀ {U,V} :=
 begin
   simp,
 end
 
-lemma union_2_eq {X : Type} (U V : set X) : U ∪ V  = ⋃₀ {U,V} :=
+-- análogamente, vemos que ocurre lo mismo para la intersección
+lemma interseccion_2_eq {X : Type}  ( U V : set X) : U ∩ V = ⋂₀ {U,V} :=
 begin
   simp,
 end
@@ -77,23 +78,38 @@ begin
   repeat {rw hS, assumption,},
 end
 
---igualmente para intersección de dos
-lemma abierto_interseccion_2 {X : Type} [espacio_topologico X]  (U V : set X) (hU : abierto U)  (hV : abierto V) :
-abierto (U ∩ V) :=
+-- ahora veamos que la intersección de una cantidad finita de abiertos es abierto
+lemma abierto_interseccion_finita {X : Type} [espacio_topologico X]  (ℱ : set (set X)) (hab: ℱ ⊆ abiertos) (hfin : set.finite ℱ) :
+abierto ⋂₀ ℱ :=
 begin
-  rw interseccion_2_eq,
-  apply abierto_interseccion,
-  {
-    intros x hx,
-    cases hx,
-    {
-      rw hx, exact hU,
-    },
-    {
-      cases hx, exact hV,
-    },
+  -- vamos a hacerlo por inducción, para ello, necesitamos que la propiedad de ser abiertos
+  -- forme parte de la hipótesis de inducción
+  -- para ello, usamos la táctica `revert`, que hace lo contrario que `intro`
+  revert hab,
+  apply finite.induction_on hfin,
+  {  -- caso de familia vacía
+    simp only [empty_subset, sInter_empty, abierto_def, forall_true_left],
+    exact abierto_total,
   },
-  simp,  -- hay que ver que la familia de dos conjuntos es finita, el simplificador lo hace
+  {  -- paso de inducción: suponiendo que es cierto para una familia, 
+     -- lo demostramos para el resultado de añadirle un elemento más
+     -- `insert a S` es el conjunto resultante de añadir `a`al conjunto `S`
+    intros A S hAS hSfin hSab hASab,
+    simp only [sInter_insert, abierto_def],
+    apply abierto_interseccion,
+    {
+      apply hASab,
+      left,
+      refl,
+    },
+    {
+      apply hSab,
+      intros U hU,
+      apply hASab,
+      right,
+      exact hU,
+    }
+  }
 end
 
 
@@ -127,11 +143,11 @@ begin
   exact abierto_total,
 end
 
-lemma cerrado_inter {X : Type} [espacio_topologico X] (F : set (set X)) (hf : F ⊆ cerrados) :
-cerrado ⋂₀ F :=
+lemma cerrado_inter {X : Type} [espacio_topologico X] (ℱ : set (set X)) (hf : ℱ ⊆ cerrados) :
+cerrado ⋂₀ ℱ :=
 begin
   simp only [topologicos.cerrado.equations._eqn_1],
-  have haux : (⋂₀ F)ᶜ = ⋃₀ (compl '' F),
+  have haux : (⋂₀ ℱ)ᶜ = ⋃₀ (compl '' ℱ),
   {
     ext,
     simp only [set.mem_sInter, set.mem_Union, set.sUnion_image, iff_self, set.mem_compl_iff, not_forall],
@@ -142,22 +158,20 @@ begin
   cases hU with V hV,
   cases hV with hV1 hV2,
   specialize hf hV1,
-  simp at hf,
+  simp only [cerrados_def, abierto_def] at hf,
   rw hV2 at hf,
   exact hf,
 end
 
 lemma cerrado_union {X : Type} [espacio_topologico X] (C D : set X) : cerrado C → cerrado D → cerrado (C ∪ D ) :=
 begin
-  simp only [cerrado_def,compl_union, abierto_def],
-  intros,
-  apply abierto_interseccion_2,
-  assumption,
-  assumption,
+  unfold cerrado,
+  simp only [compl_union],
+  apply abierto_interseccion,
 end
 
-lemma cerrado_union_finita  {X : Type} [espacio_topologico X] (F : set (set X)) (hf : F ⊆ cerrados)  (hfin : set.finite F):
-cerrado ⋃₀ F :=
+lemma cerrado_union_finita  {X : Type} [espacio_topologico X] (ℱ : set (set X)) (hf : ℱ ⊆ cerrados)  (hfin : set.finite ℱ):
+cerrado ⋃₀ ℱ :=
 begin
   apply set.finite.induction_on' hfin,
   {
@@ -183,7 +197,7 @@ Se puede definir una topología a partir de una estructura de espacio métrico
 Ejercicio: completar las demostraciones de que cumple los axiomas de topología
 (es decir, sustituye los `sorry` por las demostraciones correspondientes)
 -/
-def topologia_metrico {X : Type} [metricos.espacio_metrico X] : espacio_topologico X :=
+instance topologia_metrico {X : Type} [metricos.espacio_metrico X] : espacio_topologico X :=
 { abiertos := {U : set X | ∀ x ∈ U, metricos.entorno x U},
   abierto_total := 
   begin
@@ -202,6 +216,14 @@ def topologia_metrico {X : Type} [metricos.espacio_metrico X] : espacio_topologi
     sorry,
   end
 }
+
+/-
+Demostramos un resultado trivial para poder usarlo más adelante
+-/
+lemma topologia_metrico_def {X : Type} [metricos.espacio_metrico X] : abiertos = {U : set X | ∀ x ∈ U, metricos.entorno x U} :=
+begin
+  refl,
+end
 
 
 /-

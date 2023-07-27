@@ -175,6 +175,8 @@ begin
   },
 end
 
+def denso (A : set X) := clausura A = set.univ
+
 end clausura
 
 namespace interior

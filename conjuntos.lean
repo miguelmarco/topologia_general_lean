@@ -79,6 +79,50 @@ begin
   -- y los que estén marcados como @[simp]
 end  
 
+@[simp]
+lemma complemento_union {X : Type} (A B : set X) : (A ∪ B)ᶜ = Aᶜ ∩ Bᶜ :=
+begin
+  ext x,
+  simp [compl_defin],
+  push_neg,
+  refl,
+end
+
+@[simp]
+lemma complemento_interseccion {X : Type} (A B : set X) : (A ∩ B)ᶜ = Aᶜ ∪ Bᶜ :=
+begin
+  ext x,
+  simp [compl_defin],
+  split,
+  {
+    intro hx,
+    by_cases hA :x ∈ A,
+    {
+      right,
+      apply hx,
+      exact hA,
+    },
+    {
+      left,
+      exact hA,
+    }
+  },
+  {
+    intro hx,
+    intro hxA,
+    cases hx,
+    {
+      by_contra,
+      apply hx,
+      exact hxA,
+    },
+    {
+      exact hx,
+    }
+  }
+end
+
+
 
 -- un conjunto `A` es el vacío si y solo si es falso que cualquier
 -- elemento le pertenezca
@@ -491,11 +535,23 @@ end
 
 
 
+-- SI una familia está contenida en otra, su unión está contenida en la unión de la otra
+
+lemma union_familia_contenida (X : Type) (F G : set (set X)) (h : F ⊆ G) :
+⋃₀ F ⊆ ⋃₀ G :=
+begin
+  sorry,
+end
 
 
+-- y con las intersecciones ocurre al revés
 
 
-
+lemma interseccion_familia_contenida (X : Type) (F G : set (set X)) (h : F ⊆ G) :
+⋂₀ G ⊆ ⋂₀ F :=
+begin
+  sorry,
+end
 
 
 
@@ -531,6 +587,8 @@ lemma preimagen_interseccion_familia' (X Y : Type) (f : X → Y) (F : set (set Y
 begin
   sorry,
 end
+
+
 
 -- La unión de las preimagenes es la imagen de la unión
 
@@ -671,6 +729,64 @@ begin
   refl,
 end
 
+/-
+## Conjuntos finitos
 
+Si queremos probar una propiedad sobre conjuntos finitos, podemos
+hacerlo por inducción: primero demostramos que la propiedad se cumple
+para el conjunto vacío, y luego que si se cumple para un conjunto,
+se cumple también si le añadimos un elemento más.
+-/
 
+lemma imagen_insert (X Y : Type) (f : X → Y) (S : set X) (a : X) :
+{y : Y | ∃ x ∈ (insert a S), f x = y} = insert (f a) {y : Y | ∃ x ∈ S, f x = y } :=
+begin
+  ext y,
+  simp,
+  split,
+  {
+    intro h,
+    cases h with x hx,
+    cases hx with hx1 hxy,
+    cases hx1,
+    {
+      left,
+      rw ← hx1,
+      rw hxy,
+    },
+    {
+      right,
+      use x,
+      tauto,
+    }
+  },
+  {
+    intro h,
+    cases h,
+    {
+      use a,
+      tauto,
+    },
+    {
+      cases h with x hx,
+      use x,
+      tauto,
+    }
+  }
+end
+
+lemma familia_parametrizada_finita (X Y: Type) (S : set X) (h : set.finite S) (f : X → Y) :
+set.finite { y : Y | ∃ x ∈ S,  f x = y } :=
+begin
+  apply set.finite.induction_on h,
+  {
+    simp,
+  },
+  {
+    intros a s ha hs hind,
+    rw imagen_insert,
+    apply finite.insert,
+    exact hind,
+  }
+end
 

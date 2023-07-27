@@ -39,68 +39,37 @@ def topologia_metrico_solucion {X : Type} [metricos.espacio_metrico X] : espacio
   end,
   abierto_interseccion := 
   begin
-    intros F hF hFin x hx,
-    revert hF,
-    revert hx,
-    apply set.finite.induction_on hFin,
+    intros U V hU hV,
+    intros x hx,
+    cases hx with hxU hxV,
+    specialize hU x hxU,
+    specialize hV x hxV,
+    cases hU with r1 hr1,
+    cases hr1 with hr1pos hr1bola,
+    cases hV with r2 hr2,
+    cases hr2 with hr2pos hr2bola,
+    use min r1 r2,
+    split,
     {
-      simp only [sInter_empty, mem_univ, empty_subset, forall_true_left],
-      use 1,
-      simp only [gt_iff_lt, zero_lt_one, subset_univ, and_self],
+      simp only [gt_iff_lt, lt_min_iff],
+      split,
+        linarith,
+        linarith,
     },
     {
-      intros V C hV hCf hCen hxv hind,
-      simp only [set.sInter_insert],
-      have hVen : metricos.entorno x V,
-      {
-        apply hind, simp only [set.mem_insert_iff, true_or, eq_self_iff_true],
-        simp only [set.sInter_insert, set.mem_sInter, set.mem_inter_iff] at hxv,
-        tauto,
-      },
-      have hInen : metricos.entorno x ⋂₀ C,
-      {
-        simp only [set.sInter_insert, set.mem_inter_iff] at hxv,
-        specialize hCen hxv.2,
-        apply hCen,
-        intros A hA,
-        apply hind,
-        right,assumption,
-      },
-      cases hVen with r1 hr1,
-      cases hr1 with hr1pos hr1,
-      cases hInen with r2 hr2,
-      cases hr2 with hr2pos hr2,
-      use min r1 r2,
+      intros y hy,
+      simp only [metricos.bola_carac, lt_min_iff] at hy,
+      cases hy with hy1 hy2,
       split,
       {
-        simp only [gt_iff_lt, lt_min_iff], tauto,
+        apply hr1bola,
+        exact hy1,
       },
       {
-        simp only [set.subset_inter_iff],
-        split,
-        {
-          intros y hy,
-          apply hr1,
-          simp only [set.sInter_insert,
- set.mem_sInter,
- gt_iff_lt,
- set.subset_sInter_iff,
- set.mem_set_of_eq,
- set.mem_inter_iff,
- metricos.bola.equations._eqn_1] at *,
-          simp only [lt_min_iff] at hy,
-          linarith,
-        },
-        {
-          intros z hz,
-          apply hr2,
-          unfold metricos.bola at *,
-          simp only [mem_set_of_eq, mem_sInter, sInter_insert, mem_inter_eq, gt_iff_lt, subset_sInter_iff, lt_min_iff] at *,
-          exact hz.2,
-        },
-      },
-
-    },
+        apply hr2bola,
+        exact hy2,
+      }
+    }
   end }
 
 def discreta_solucion (X : Type) : espacio_topologico X :=
@@ -165,33 +134,18 @@ def indiscreta_solucion (X : Type) : espacio_topologico X :=
   end,
   abierto_interseccion := 
   begin
-    intros F hF hFfin,
-    by_cases hem: ∅ ∈ F,
+    intros U V hU hV,
+    cases hU,
     {
       left,
-      rw sInter_eq_empty_iff,
-      intro x,
-      use ∅,
-      tauto,
+      rw hU,
+      simp only [empty_inter],
     },
     {
-      right,
-      rw mem_singleton_iff,
-      ext,
-      simp only [mem_sInter, mem_univ, iff_true],
-      intros S hS,
-      specialize hF hS,
-      simp only [set.mem_insert_iff, set.mem_singleton_iff] at hF,
-      cases hF,
-      {
-        rw hF at hS,
-        by_contradiction,
-        apply hem hS,
-      },
-      {
-        rw hF,
-        triv,
-      }
+      simp only [mem_singleton_iff] at hU,
+      rw hU,
+      simp only [univ_inter],
+      exact hV,
     }
   end
 }
@@ -237,34 +191,30 @@ def punto_incluido_solucion (X : Type) (x : X) : espacio_topologico X :=
   end,
   abierto_interseccion := 
   begin
-    intros F hF hFfin,
-    simp only [union_singleton, mem_insert_iff, mem_set_of_eq, mem_sInter],
-    by_cases h : ⋂₀ F = ∅,
+    simp only [union_singleton, mem_insert_iff, mem_set_of_eq, mem_inter_eq],
+    intros U V hU hV,
+    cases hU,
     {
-      left,
-      exact h,
+      rw hU,
+      simp only [empty_inter, mem_empty_eq, false_and, or_false],
     },
     {
-      right,
-      intros U hU,
-      specialize hF hU,
-      cases hF,
+      cases hV,
       {
-        exact hF,
+        rw hV,
+        simp only [inter_empty, mem_empty_eq, and_false, or_false],
       },
       {
-        by_contradiction hx,
-        apply h,
-        ext y,
-        simp only [mem_sInter, mem_empty_eq, iff_false, not_forall, exists_prop],
-        use U,
+        right,
         split,
-        exact hU,
-        simp only [mem_singleton_iff] at hF,
-        rw hF,
-        tauto,
-      }
-    }
+        {
+          exact hU,
+        },
+        {
+          exact hV,
+        }
+      },
+    },
   end
 }
 
@@ -312,52 +262,20 @@ def imagen_inversa_solucion (X Y : Type) [τY : espacio_topologico Y] (f : X →
   end,
   abierto_interseccion := 
   begin
-    intros F hF hFfin,
-    choose g hg using hF, -- elegimos un conmjunto de Y para cada elemento de F
-    use ⋂₀ {V : set Y | ∃ (U : set X) (hU : U ∈ F), V = g hU},
+    intros U1 U2 hU1 hU2,
+    cases hU1 with V1 hV1,
+    cases hV1 with hV1ab hV1U1,
+    cases hU2 with V2 hV2,
+    cases hV2 with hV2ab hV2U2,
+    use V1 ∩ V2,
     split,
     {
       apply abierto_interseccion,
-      {
-        intros V hV,
-        cases hV with U hU,
-        cases hU with hUF hUV,
-        rw hUV,
-        specialize hg  hUF,
-        cases hg with hgUab hgfU,
-        exact hgUab,
-      },
-      {
-        apply finite.dependent_image,
-        exact hFfin,
-      }
+        exact hV1ab,
+        exact hV2ab,
     },
     {
-      ext x,
-      split,
-      {
-        intro h,
-        intros U hU,
-        specialize h (g hU),
-        specialize hg hU,
-        cases hg with hgab hgfU,
-        rw ← hgfU,
-        apply h,
-        use U,
-        use hU,
-      },
-      {
-        intro hx,
-        intros V hV,
-        cases hV with U hU,
-        cases hU with hUF hUV,
-        specialize hx U hUF,
-        rw  hUV,
-        specialize hg hUF,
-        cases hg with hgUab hfgU,
-        rw ← hfgU at hx,
-        exact hx,
-      },
+      simp only [preimagen_interseccion, hV1U1, hV2U2],
     }
   end
 }
@@ -387,24 +305,10 @@ def imagen_directa_solucion (X Y: Type) [τX :espacio_topologico X] (f : X → Y
   end,
   abierto_interseccion := 
   begin
-    intros F hF hFfin,
-    dsimp,
-    rw preimagen_interseccion_familia',
+    intros U V hU hV,
+    simp only [mem_set_of_eq, preimage_inter] at *,
     apply abierto_interseccion,
-    {
-      intros U hU,
-      cases hU with V hV,
-      cases hV with hVf hfVU,
-      rw ← hfVU,
-      apply hF,
-      exact hVf,
-    },
-    {
-      have haux0 := finite.image (preimage f) hFfin,
-      simp only [preimage, image] at haux0,
-      simp only [exists_prop],
-      exact haux0,
-    }
+    repeat {assumption},
   end
 }
 
@@ -460,52 +364,30 @@ def cofinita_solucion (X : Type) : espacio_topologico X :=
   end,
   abierto_interseccion := 
   begin
-    intros F hF hFfin,
-    revert hF,
-    apply finite.induction_on hFfin,
+    intros U V hU hV,
+    cases hU,
     {
-      simp only [union_singleton, empty_subset, sInter_empty, mem_insert_iff, mem_set_of_eq, compl_univ, finite_empty, or_true,
-  forall_true_left],
-    },
-    {
-      intros U S hUs hSfin hS hin,
-      specialize hS _,
-      {
-        refine subset_trans _ hin,
-        apply subset_insert,
-      },
-      dsimp at *,
-      by_cases hUcompl : U = ∅,
-      {
-        right,
-        rw hUcompl,
-        simp only [set.sInter_insert, eq_self_iff_true, set.empty_inter],
-      },
-      cases hS,
+      cases hV,
       {
         left,
-        refine finite.subset _ _,  exact Uᶜ ∪ (⋂₀ S)ᶜ,
-        {
-          rw finite_union,
-          split,
-          {
-            specialize hin _, exact U,
-            {
-              apply mem_insert,
-            },
-            cases hin,
-            {
-              exact hin,
-            },
-            tauto,
-          },
-          exact hS,
-        },
-        simp only [set.sInter_insert, compl_inter],
+        dsimp at *,
+        rw compl_inter,
+        rw finite_union,
+        tauto,
       },
-      right,
-      simp only [hS, sInter_insert, inter_empty],
+      {
+        right,
+        simp at *,
+        rw hV,
+        simp,
+      }
     },
+    {
+      right,
+      simp at *,
+      rw hU,
+      simp,
+    }
 end }
 
 def conumerable_solucion (X : Type) : espacio_topologico X :=
@@ -553,45 +435,28 @@ def conumerable_solucion (X : Type) : espacio_topologico X :=
   end,
   abierto_interseccion := 
   begin
-    intros F hF hFfin,
-    simp only [union_singleton, mem_insert_iff, mem_set_of_eq],
-    by_cases hcases: ⋂₀ F = ∅,
+    intros U V hU hV,
+    cases hU,
     {
-      left,
-      exact hcases,
+      cases hV,
+      {
+        left,
+        simp at *,
+        tauto,
+      },
+      {
+        right,
+        simp at *,  
+        rw hV,
+        simp,
+      }
     },
     {
       right,
-      simp [sInter_eq_compl_sUnion_compl],
-      apply countable.bUnion,
-      {
-        exact finite.countable hFfin,
-      },
-      { 
-        intros a ha,
-        specialize hF ha,
-        cases hF,
-        {
-          exact hF,
-        },
-        {
-          simp only [mem_singleton_iff] at hF,
-          by_contradiction,
-          apply hcases,
-          ext x,
-          simp only [mem_sInter, mem_empty_eq, iff_false, not_forall, exists_prop],
-          use a,
-          split,
-          {
-            exact ha,
-          },
-          {
-            rw hF,
-            tauto,
-          }
-        },
-      },
-    },
+      simp at *,
+      rw hU,
+      simp,
+    }
   end
 }
 
