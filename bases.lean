@@ -672,5 +672,11 @@ begin
   sorry,
 end
 
+lemma ejer_2_2_8 (S : set (set X)) (hsAb : S ⊆ abiertos) : 
+subbase S ↔ ∀ (U : set X), abierto U →  ∀ x ∈ U, ∃ (ℱ : set (set X)), set.finite ℱ ∧ ℱ ⊆ S ∧ x ∈ ⋂₀ ℱ ∧ ⋂₀ ℱ ⊆ U:=
+begin
+  sorry,
+end
+
 
 end topologicos

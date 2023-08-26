@@ -27,11 +27,7 @@ Esta estructura está formada por
 La forma de representar este tipo de estructuras es mediante una **clase**:
 -/
 
-class distancia {X : Type } (d : X → X → ℝ ) :=
-( d1 : ∀ x y : X, d x y ≥ 0)
-( d2 : ∀ x y: X , d x y = 0 ↔ x = y)
-( d3 : ∀ x y : X, d x y = d y x)
-( d4 : ∀ x y z : X, d x z ≤ d x y + d y z )
+
 
 class espacio_metrico (X : Type) :=
 ( d : X → X → ℝ )

@@ -37,9 +37,23 @@ class espacio_topologico (X : Type) :=
 ( abierto_union : ∀ ℱ : set (set X), (ℱ ⊆ abiertos → ⋃₀ ℱ ∈ abiertos ) )
 ( abierto_interseccion :  ∀ (U V : set X), U ∈ abiertos → V ∈ abiertos → U ∩ V ∈ abiertos)
 
-
 open espacio_topologico -- así podemos  escribir `abiertos` en lugar de `espacio_topologico.abiertos`
 
+-- lo que caracteriza a la estructura de espacio topológico es el conjunto de abiertos
+lemma igualdad_topologias {X : Type} (τ1 : espacio_topologico X) (τ2 : espacio_topologico X) :
+τ1 = τ2 ↔ τ1.abiertos = τ2.abiertos :=
+begin
+  split,
+  {
+    intro h,
+    rw h,
+  },
+  {
+    intro h,
+    ext,
+    rw h,
+  }
+end
 
 -- por comodidad, definimos la propiedad de ser abierto como pertenecer al conjunto de abiertos
 -- (internamente, Lean los trata igual)
@@ -112,83 +126,6 @@ begin
   }
 end
 
-
-
-def cerrado {X : Type} [espacio_topologico X] (C : set X) := abierto Cᶜ 
-def cerrados {X : Type} [espacio_topologico X] : set (set X):= cerrado 
-
-@[simp]
-lemma cerrado_def {X : Type} [espacio_topologico X] (C : set X) : cerrado C ↔ abierto Cᶜ :=
-begin
-  refl,
-end
-
-@[simp]
-lemma cerrados_def {X : Type} [espacio_topologico X] (C : set X) : C ∈ (cerrados : set (set X)) ↔ abierto Cᶜ :=
-begin
-  refl,
-end
-
-
-
-lemma cerrado_univ {X : Type} [espacio_topologico X] : cerrado (univ : set X) :=
-begin
-  simp only [cerrado,set.compl_univ],
-  exact abierto_vacio,
-end
-
-lemma cerrado_vacio {X : Type} [espacio_topologico X] : cerrado (∅  : set X) :=
-begin
-  simp only [cerrado,set.compl_empty],
-  exact abierto_total,
-end
-
-lemma cerrado_inter {X : Type} [espacio_topologico X] (ℱ : set (set X)) (hf : ℱ ⊆ cerrados) :
-cerrado ⋂₀ ℱ :=
-begin
-  simp only [topologicos.cerrado.equations._eqn_1],
-  have haux : (⋂₀ ℱ)ᶜ = ⋃₀ (compl '' ℱ),
-  {
-    ext,
-    simp only [set.mem_sInter, set.mem_Union, set.sUnion_image, iff_self, set.mem_compl_iff, not_forall],
-  },
-  rw haux,
-  apply abierto_union,
-  intros U hU,
-  cases hU with V hV,
-  cases hV with hV1 hV2,
-  specialize hf hV1,
-  simp only [cerrados_def, abierto_def] at hf,
-  rw hV2 at hf,
-  exact hf,
-end
-
-lemma cerrado_union {X : Type} [espacio_topologico X] (C D : set X) : cerrado C → cerrado D → cerrado (C ∪ D ) :=
-begin
-  unfold cerrado,
-  simp only [compl_union],
-  apply abierto_interseccion,
-end
-
-lemma cerrado_union_finita  {X : Type} [espacio_topologico X] (ℱ : set (set X)) (hf : ℱ ⊆ cerrados)  (hfin : set.finite ℱ):
-cerrado ⋃₀ ℱ :=
-begin
-  apply set.finite.induction_on' hfin,
-  {
-    simp,
-    exact abierto_total,
-  },
-  {
-    intros a S ha hS haS hind,
-    simp only [sUnion_insert],
-    apply cerrado_union,
-    {
-      apply hf,
-      exact ha,
-    },
-    apply hind,
-  }
-end
 
 
 /-
