@@ -39,6 +39,46 @@ class espacio_metrico (X : Type) :=
 
 open espacio_metrico
 
+/-
+## Ejemplo:
+
+veamos que de hecho los reales tienen una estructura de espacio métrico:
+-/
+instance : espacio_metrico ℝ := 
+{ d := λ x y, | x - y |,  -- definimos la función que da la distancia entre dos puntos
+  d1 :=   -- y ahora vemos que cumple las propiedades
+  begin
+    intros x y,
+    exact abs_nonneg (x - y),  -- estas propiedades ya están demostradas en la biblioteca, así que las usamos
+  end,
+  d2 := 
+  begin
+    intros x y,
+    simp,
+    split,
+    {
+      intro h,
+      linarith,
+    },
+    {
+      intro h,
+      rw  [h],
+      simp,
+    },
+  end,
+  d3 := 
+  begin
+    intros x y,
+    exact abs_sub_comm x y,
+  end,
+  d4 := 
+  begin
+    intros x  y z,
+    exact abs_sub_le x y z,
+  end 
+}
+
+
 -- a partir de ahora, supondremos que tenemos un espacio métrico llamado `X`
 variables {X : Type} [espacio_metrico X]
 -- esto es equivalente a añadir estas hipótesis implíctiamente en cada 
@@ -179,13 +219,45 @@ def entorno  (x : X) (E : set X) := ∃ (r : ℝ) (hr : r > 0), bola x r ⊆ E
 
 
 -- Trivialmente, una bola centrada en un punto es entorno del mismo
-example  (x : X) (r : ℝ ) (hr : r > 0) : entorno x (bola x r) :=
+lemma bola_entorno_centro  (x : X) (r : ℝ ) (hr : r > 0) : entorno x (bola x r) :=
 begin
-  unfold entorno,
+  simp only [entorno, bola, gt_iff_lt, set_of_subset_set_of, exists_prop],
   use r,
   tauto,
 end
 
+-- los discos de radio positivo también son entornos de su centro
+lemma disco_entorno_centro  (x : X) (r : ℝ ) (hr : r > 0) : entorno x (disco x r)  :=
+begin
+  use r,
+  split,
+  {
+    exact hr,
+  },
+  {
+    intros y hy,
+    dsimp [bola] at hy,
+    dsimp [disco],
+    linarith,
+  },
+end
+
+lemma entorno_superconjunto (x : X) (U V : set X) (hU : entorno x U) (hV : U  ⊆ V) : entorno x V :=
+begin
+  cases hU with r hr,
+  cases hr with hrpos hrbol,
+  use r,
+  split,
+  {
+    exact hrpos,
+  },
+  {
+    intros y hy,
+    apply hV,
+    apply hrbol,
+    exact hy,
+  }
+end
 
 /-
 Un conjunto es abierto si es entorno de todos sus puntos
@@ -202,16 +274,34 @@ Las bolas son abiertas
 lemma bola_abierta (x : X) (r : ℝ ) (hr : r > 0) : abierto (bola x r) :=
 begin
   intros y hy,
-  use (r - d x y),
+  dsimp [bola] at hy,
+  use r - (d x y),
   split,
   {
-    simp only [bola_carac] at hy,
     linarith,
   },
   {
     intros z hz,
-    simp only [bola_carac] at *,
-    have ht := d4 x y z,
+    dsimp [bola] at *,
+    have haux := d4 x y z,
+    linarith,
+  }
+end
+
+lemma complementario_disco_abierto (x : X) (r : ℝ ) : abierto (disco x r)ᶜ :=
+begin
+  intros y hy,
+  simp [disco] at hy,
+  use d x y - r,
+  split,
+  {
+    linarith,
+  },
+  {
+    intros z hz,
+    simp [disco, bola] at *,
+    have haux := d4 x z y,
+    have haux := d3 y z,
     linarith,
   }
 end
@@ -221,23 +311,16 @@ El total es abierto
 -/
 lemma ab_total  : abierto (univ : set X) :=
 begin
-  intros x hx,  -- tomamos un `x` y vamos a encontrar la bola
-  use 1,  -- podemos usar cualquier radio para la bola
-  split,
-  {
-    linarith,  -- para demostrar desigualdades
-  },
-  {
-    intros y hy, -- tomamos un y en la bola
-    trivial,    -- y trivialmente está en el conjunto total
-  }
+  intros x hx,
+  use 1,
+  simp only [set.subset_univ, gt_iff_lt, and_self, zero_lt_one],
 end
-
 
 /-
 Otra forma equivalente de decirlo es que el total pertenece a la
 familia de los abiertos
 -/
+
 lemma ab_total' : (univ : set X)  ∈  (abiertos : set (set X)):=
 begin 
    exact ab_total,
@@ -260,7 +343,7 @@ lemma ab_union (F : set (set X)) (hab : F ⊆ abiertos) : abierto ⋃₀ F  :=
 begin
   intros x hx,           -- tomamos un punto en la union
   cases hx with U hU,    -- como está en la unión, está en uno de sus conjuntos, `U`
-  cases hU with hUF hxU, 
+  cases hU with hUF hxU,
   specialize hab hUF,     -- como `F` está formada por abiertos, `U` lo es
   specialize hab x hxU,   -- y como `x` está en `U`, es un entorno
   cases hab with r hr,    -- o sea, que hay una bola intermedia
@@ -286,29 +369,23 @@ begin
   specialize hB  x hxB,
   cases hB with rb hrB,
   cases hrB with hrbpos hrbbol,
-  use (min ra rb),
+  by_cases hmax : ra < rb,
   {
-    split,
-    {
-      simp,
-      split,
-      linarith,
-      linarith,
-    },
-    {
-      intros y hy,
-      simp at hy,
-      cases hy with hya hyb,
-      split,
-      {
-        apply hrabol,
-        exact hya,
-      },
-      {
-        apply hrbbol,
-        exact hyb,
-      }
-    }
+    use ra,
+    split, assumption,
+    apply subset_inter hrabol,
+    refine subset_trans _ hrbbol,
+    apply bola_radio_monotono , exact hmax,
+  },
+  {
+    use rb,
+    split, assumption,
+    apply subset_inter _ hrbbol,
+    intros y hy,
+    simp [bola] at hy,
+    apply hrabol,
+    simp [bola],
+    linarith,
   }
 end
 
@@ -351,57 +428,31 @@ begin
       apply bola_abierta,
       exact hrpos,
     },
+    split,
     {
-      split,
-      {
-        simp,
-        linarith,
-      },
-      {
-        exact hrbol,
-      }
-    }
+      simp [bola],
+      linarith,
+    },
+    {
+      exact hrbol,
+    },
   },
   {
     intro h,
     cases h with U hU,
-    cases hU with hUab hxU,
-    cases hxU with hxU hUV,
+    cases hU with hUab hU2,
+    cases hU2 with hxU hUV,
     specialize hUab x hxU,
-    cases hUab with r hr,
-    cases hr with hrpos hrbol,
-    use r,
-    split,
-    exact hrpos,
-    tauto,
+    apply entorno_superconjunto,
+    {
+      exact hUab,
+    },
+    {
+      exact hUV,
+    }
   }
-end 
+end
 
-
-/-
-Definimos la topología usual en ℝ. Es decir, damos la aplicación distancia,
-y demostramos las propiedades que se deben cumplir
--/
-instance real.metrico : espacio_metrico ℝ := 
-{
-d :=begin        -- la distancia entre dos números es el valor absoluto de su diferencia
-  intros x y, -- tomamos los valores
-  exact | x - y |, -- y damos el resultado
-end, 
-d1 := 
-begin
-  intros x y,
-  apply abs_nonneg,  -- usamos el lema abs_nonneg, ya demostrado
-end,
-d2 := 
-begin
-  intros x y,
-  rw abs_eq_zero,  -- aqui usamos propiedades del valor absoluto, ya demostradas
-  rw sub_eq_zero,
-end,
-d3 := abs_sub_comm,
-d4 := abs_sub_le, 
-} 
 
 
 /-
