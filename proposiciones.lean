@@ -38,7 +38,8 @@ end
 -- Como el objetivo es `P → P` debemos describir una función que tome una 
 -- demostración de `P` y nos devuelva otra también de `P`. Lo más simple
 -- es considerar la identidad. Para describir es función debemos tomar 
--- el argumento de la misma (en este caso `hp`) y construir su salida
+-- el argumento de la misma (en este caso `hp`) con la táctica `intro` 
+-- y construir su salida como antes
 
 example (P : Prop) : P → P :=
 begin
@@ -47,14 +48,17 @@ begin
 exact
 
 
--- Otro ejemplo, si queremos demostrar una implicación, podemos tomar la premisa
--- como hipótesis, y demostrar la tesis. Para ello se usa la táctica `intro`
+-- Otro ejemplo en la misma línea.  Si queremos demostrar una implicación, 
+-- podemos tomar la premisa como hipótesis, y demostrar la tesis. Para ello 
+-- se usa la táctica `intro`. 
+-- Es algo tautológico, ya que, estamos asumiendo `Q`
 
 example (P Q : Prop) (hq : Q) : P → Q :=
 begin
  intro hp,
  exact hq,
 end
+
 
 -- La táctica `apply` se puede usar cuando tenemos como hipótesis una implicación `h`
 -- que implica nuestro objetivo. Al usarla, el objetivo cambia y pasamos a tener que
@@ -65,6 +69,7 @@ begin
   apply hI,
   exact hp,
 end
+
 
 -- La táctica `split` divide un objetivo que consiste de dos afirmaciones, en dos 
 -- objetivos separados
@@ -81,6 +86,7 @@ begin
     exact h,
   }
 end
+
 
 -- Sirve tanto para dobles implicaciones como para conjunciones
 
@@ -114,6 +120,7 @@ begin
   exact h,
 end
 
+
 -- Si tenemos una hipótesis que consiste de varias afirmaciones, `cases` nos la separa en varias
 -- hipótesis. Si la hipótesis es una disyunción, nos separa el objetivo en varios casos
 
@@ -135,6 +142,7 @@ begin
     exact h,
   }
 end
+
 
 -- Si tenemos una hipótesis de implicación `h : P → Q`, y otra que nos da la premisa, `hp : P`,
 -- podemos convertir la primera en una del consecuente con `specialize` 
