@@ -33,6 +33,20 @@ begin
   exact h,
 end
 
+
+-- Otra forma de escribir el "mismo" resultado sería con una implicación.
+-- Como el objetivo es `P → P` debemos describir una función que tome una 
+-- demostración de `P` y nos devuelva otra también de `P`. Lo más simple
+-- es considerar la identidad. Para describir es función debemos tomar 
+-- el argumento de la misma (en este caso `hp`) y construir su salida
+
+example (P : Prop) : P → P :=
+begin
+  intro hp,       -- tomamos el 'input'
+  exact hp,       -- devolvemos la misma cosa
+exact
+
+
 -- Otro ejemplo, si queremos demostrar una implicación, podemos tomar la premisa
 -- como hipótesis, y demostrar la tesis. Para ello se usa la táctica `intro`
 
