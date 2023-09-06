@@ -183,3 +183,31 @@ begin
     apply contenido_en_preimagen_imagen,
   }
 end
+
+/-
+No hay aplicación suprayectiva entre un conjunto y sus partes
+-/
+lemma partes_mayores (X : Type) : ¬ ∃ f : X → set X, surjective f :=
+begin
+  intro h,                  -- supongamos que la hay
+  cases h with f hf,        -- tomemos la función y su propiedad
+  let Af := {x | x ∉ f x},  -- definimos el conjunto auxiliar
+  specialize hf Af,         -- por ser f suprayectiva, hay un elemento que es preimagen
+  cases hf with y hy,       -- tomamos pues ese elemento
+  by_cases hcaso : y ∈ f y, -- ahora hacemos la demostración por casos 
+  {                         -- si y ∈ f y
+    have hneg : y ∉ f y,    
+    {                        -- veamos que y ∉ f y
+      rw hy,                 -- es lo mismo que decir y ∉ Af
+      simp,                  -- pero eso es lo mismo que y ∈ fy
+      exact hcaso,           -- que lo tenemos por suponer que estamos en este caso
+    },
+    exact hneg hcaso,        -- así que tenemos la contradicción
+  },
+  {                          -- si y ∉ f y
+    rw hy at hcaso,          --  eso es lo mismo que decir y ∉ Af
+    apply hcaso,             -- así que para ver la contradicción, basta ver que y ∈ Af
+    rw ← hy at hcaso,        -- volvemos a escribir el caso como y ∉ f y
+    exact hcaso,             -- y eso es exactamente estar en Af
+  }
+end
