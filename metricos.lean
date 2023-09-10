@@ -197,17 +197,111 @@ begin
   rw ej_1_1_6,  -- símplemente, usamos el caso anterior
 end
 
+lemma ej_1_1_7  (M1 M2 : espacio_metrico X) (h : ∀ x y : X, @d X M1 x y ≤ @d X M2 x y) : ∀ x : X, ∀ ε > 0,  @bola X M2 x ε ⊆ @bola X M1 x ε  :=
+begin
+  intros x ε hε y hy,
+  unfold bola at hy,
+  simp at hy,
+  unfold bola,
+  simp,
+  specialize h x y,
+  calc           -- esta táctica permite encadenar (des)igualdades, demostrando cada paso por separado
+    @d X M1 x y ≤ @d X M2 x y : by {exact h,}
+    ...         < ε           : by {exact hy,}
+end
+
 lemma ej_1_1_8  (x y z : X) (r : ℝ ) (hz : z ∈ bola x r) (hy : y ∈ bola x r) :
 d y z < 2 * r :=
 begin
   simp only [bola_carac] at *,
-  calc      -- esta táctica permite encadenar (des)igualdades, demostrando cada paso por separado
+  calc      
     d y z    ≤ d y x + d x z       : by {apply d4,}
     ...      = d x y + d x z       : by {rw d3,}
     ...      < r + r               : by {linarith,}
     ...      = 2 * r               : by {ring,}
 end
 
+lemma ej_1_1_12_1 (h : ∀ x y z : X, d x z ≤ max (d x y) (d y z)) : ∀ x y : X, ∀ ε > 0, x ∈ bola y ε → bola x ε = bola y ε :=
+begin
+  intros x y ε hε hx,
+  unfold bola at hx,
+  simp at hx,
+  ext z,
+  split,
+  {
+    simp [bola],
+    intro hz,
+    specialize h y x z,
+    simp at h,
+    cases h,
+    {
+      calc
+        d y z ≤ d y x   : by {exact h,}
+        ...   < ε        : by {exact hx,}
+    },
+    {
+      linarith,
+    }
+  },
+  {
+    simp [bola],
+    intro hz,
+    specialize h x y z,
+    simp at h,
+    cases h,
+    rw d3 at hx,
+    repeat {linarith,},
+  }
+end
+
+lemma ej_1_1_14 (X : Type) (M1 M2 : espacio_metrico X) : espacio_metrico X := 
+{ d := λ x y, max (@d X M1 x y) (@d X M2 x y),
+  d1 := begin
+    intros x y,
+    simp,
+    left,
+    apply d1,
+  end,
+  d2 := begin
+    intros x y,
+    rw max_eq_iff,
+    split,
+    {
+      intro h,
+      cases h,
+      repeat
+      {
+        cases h with h1 h2,
+        rw d2 at h1,
+        exact h1
+      },
+    },
+    {
+      intro h,
+      rw h,
+      simp,
+    }
+  end,
+  d3 := begin
+    intros x y,
+    rw @d3 X M1 x y,
+    rw @d3 X M2 x y,
+  end,
+  d4 := begin
+    intros x y z,
+    rw max_le_iff,
+    have h2 := le_max_left (@d X M1 x y) (@d X M2 x y),
+    have h2' := le_max_right (@d X M1 x y) (@d X M2 x y),
+    have h3 := le_max_left (@d X M1 y z) (@d X M2 y z),
+    have h3' := le_max_right (@d X M1 y z) (@d X M2 y z),
+    have hd4 := @d4 X M1 x y z,
+    have hd4' := @d4 X M2 x y z,
+    split,
+    repeat 
+    {
+      linarith,
+    },
+  end }
 
 
 /-

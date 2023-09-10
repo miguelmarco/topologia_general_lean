@@ -6,6 +6,8 @@ noncomputable theory
 open metricos
 open metricos.espacio_metrico
 
+variables {X : Type} [espacio_metrico X]
+
 lemma disco_entorno_centro_sol  (x : X) (r : ℝ ) (hr : r > 0) : entorno x (disco x r)  :=
 begin
   use r,
@@ -18,7 +20,7 @@ begin
     dsimp [bola] at hy,
     dsimp [disco],
     linarith,
-  },
+  }
 end
 
 lemma ejercicio_1_2_1_sol (A B : set ℝ ) (h : abierto A) : abierto { (x + y) | (x ∈ A) (y ∈ B) } := 
