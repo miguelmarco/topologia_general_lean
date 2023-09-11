@@ -35,7 +35,7 @@
               Análogamente, si el objetivo es de la forma `∀ x , P`, introduce un elemento arbitrario y deja a demostrar `P` para ese elemento concreto
 - `intros a b c`   Equivalente a `intro a, intro b, intro c`
 - `split`     Si el objetivo está formado por varias partes (por ejemplo, si es de tipo `∧` o  `\iff`), lo separa en varios subobjetivos.
-- `cases h with h1 h2`   Si la hipótesis `h` está formada por varias partes, la separa en varias hipótesis. Si `h` está formada por varios posibles casos, separa el objetivo en un objetivo por cada uno de esos casos.
+- `cases h with h1 h2`   Si la hipótesis `h` está formada por varias partes, la separa en varias hipótesis (si `h` es de tipo `∃ y, P(y)`, las partes son `y` y `p(y)`). Si `h` está formada por varios posibles casos, separa el objetivo en un objetivo por cada uno de esos casos.
 - `by_cases h : P`  Separa el objetivo en dos subobjetivos, en uno asumiento la hipótesis `h : P` y otro asumiendo lo contrario (es decir `h : ¬ P`)
 - `by_contradiction h`  Demostración por reducción al absurdo: introduce una hipótesis `h` negando el objetivo, y el objetivo a demostrar parsa a ser `false`
 - `rw h`       Si `h` dice que `a = b` (o que `a ↔ b`), reescribe `a`, cambiándolo por `b`
@@ -52,6 +52,7 @@
 - `linarith`  Intenta demostrar automáticamente (des)igualdades usando aritmética lineal.
 - `use p`     Si el objetivo es de tipo `∃ x, P(x)`, usa exactamente `p` para ver que existe, así el objetivo pasa a ser demostrar `P(p)`
 - `tauto`     Intenta demostrar automáticamente tautologías.
+- `induction n` Aplica inducción sobre `n`: el objetivo se separa en probar que es cierto para `n=0`, y probar que si es cierto para `n`, lo es para `n+1`.
 
 
 -/
