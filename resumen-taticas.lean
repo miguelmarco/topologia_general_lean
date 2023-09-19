@@ -50,6 +50,7 @@
 - `suffices h : P` igual que la anterior, pero el orden es el contrario: primero hay que demostrar el objetivo inicial usando `h : P` y despúes hay que demostrar `P`
 - `calc`      Permite demostrar (des)igualdades encadenando varias (des)igualdades seguidas.
 - `linarith`  Intenta demostrar automáticamente (des)igualdades usando aritmética lineal.
+- `ring_nf`   Simplifica expresiones que usan sumas, restas y multiplicaciones.
 - `use p`     Si el objetivo es de tipo `∃ x, P(x)`, usa exactamente `p` para ver que existe, así el objetivo pasa a ser demostrar `P(p)`
 - `tauto`     Intenta demostrar automáticamente tautologías.
 - `induction n` Aplica inducción sobre `n`: el objetivo se separa en probar que es cierto para `n=0`, y probar que si es cierto para `n`, lo es para `n+1`.

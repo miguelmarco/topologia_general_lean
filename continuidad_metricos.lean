@@ -1,5 +1,4 @@
 import .metricos
-import order.complete_lattice
 import tactic
 
 namespace metricos.continuidad
@@ -63,15 +62,12 @@ begin
     use (bola x₀  δ),
     split,
     {
-      use δ,
-      split, exact hδpos,
-      tauto,
+      apply bola_entorno_centro,
+      exact hδpos,
     },
     {
       intros y hy,
       apply hbol,
-      simp,
-      simp at hy,
       cases hy with x hx,
       cases hx with hxd hxy,
       rw ← hxy,
@@ -86,10 +82,8 @@ begin
     specialize h V,
     have hV : entorno (f x₀) V,
     {
-      use ε,
-      split, exact hε,
-      intros y hy,
-      exact hy,
+      apply bola_entorno_centro,
+      exact hε,
     },
     specialize h hV,
     cases h with U hU,
@@ -247,6 +241,24 @@ begin
   }
 end
 
+instance susbespacio_metrico {X : Type} [espacio_metrico X] {A : set X} : espacio_metrico A := 
+{ d := λ x y , d x.1 y.1 ,
+  d1 := 
+  begin
+    apply d1,
+  end,
+  d2 := 
+  begin
+    apply d2,
+  end,
+  d3 := 
+  begin
+    apply d3,
+  end,
+  d4 := 
+  begin
+    apply d4,
+  end }
 
 
 end metricos.continuidad

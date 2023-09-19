@@ -43,7 +43,16 @@ open espacio_metrico
 ## Ejemplo:
 
 veamos que de hecho los reales tienen una estructura de espacio métrico:
+
+Para ello vamos a usar algunos resultados sobre el valor absoluto que
+ya están probados en lean:
+
+`abs_nonneg : ∀ (a : ℝ), 0 ≤ |a|`
+`abs_sub_comm : ∀ (a b : ℝ), |a - b| = |b - a|`
+`abs_sub_le : ∀ (a b c : ℝ), |a - c| ≤ |a - b| + |b - c|`
+
 -/
+
 instance : espacio_metrico ℝ := 
 { d := λ x y, | x - y |,  -- definimos la función que da la distancia entre dos puntos
   d1 :=   -- y ahora vemos que cumple las propiedades
@@ -79,6 +88,7 @@ instance : espacio_metrico ℝ :=
 }
 
 
+
 -- a partir de ahora, supondremos que tenemos un espacio métrico llamado `X`
 variables {X : Type} [espacio_metrico X]
 -- esto es equivalente a añadir estas hipótesis implíctiamente en cada 
@@ -91,6 +101,42 @@ begin
   rw d2, -- reescribiendo la propiedad d2 se convierte en algo trivial
 end
 
+
+/-
+## Ejemplo: 
+
+un subconjunto de un espacio métrico hereda una estructura de espacio méttrico
+-/
+
+instance subespacio_metrico (A : set X) : espacio_metrico A := 
+{ d := λ x y , d x.val y.val,
+  d1 := begin
+    intros x y,
+    apply d1,
+  end,
+  d2 := 
+  begin
+    intros x y,
+    rw d2,
+    split,
+    {
+      intro h,
+      ext,
+      exact h,
+    },
+    {
+      intro h,
+      rw h,
+    },
+  end,
+  d3 := begin
+    intros x y,
+    apply d3,
+  end,
+  d4 := begin
+    intros x y z,
+    apply d4,
+  end }
 
 /-
 Definimos las bolas, discos y esferas
@@ -197,7 +243,16 @@ begin
   rw ej_1_1_6,  -- símplemente, usamos el caso anterior
 end
 
-lemma ej_1_1_7  (M1 M2 : espacio_metrico X) (h : ∀ x y : X, @d X M1 x y ≤ @d X M2 x y) : ∀ x : X, ∀ ε > 0,  @bola X M2 x ε ⊆ @bola X M1 x ε  :=
+/-
+Para el siguiente ejercicio vamos a usar varias estructuras de espacio métrico, en lugar de una fijada.
+
+En estos casos, cada vez que usemos algo que dependa de la estructura de espacio métrico, tenemos que
+explicitar cual vamos a usar. Eso se hace usando el símbolo `@`
+
+Por ejemplo, `@d X M1` quiere decir "la función `d` en el espacio `X` con la estructura `M1`"
+-/
+
+lemma ej_1_1_7  (M1 M2 : espacio_metrico X) (h : ∀ x y : X, (@d X M1) x y ≤ (@d X M2) x y) : ∀ x : X, ∀ ε > 0,  (@bola X M2) x ε ⊆ (@bola X M1) x ε  :=
 begin
   intros x ε hε y hy,
   unfold bola at hy,
@@ -206,9 +261,9 @@ begin
   simp,
   specialize h x y,
   calc           -- esta táctica permite encadenar (des)igualdades, demostrando cada paso por separado
-    @d X M1 x y ≤ @d X M2 x y : by {exact h,}
-    ...         < ε           : by {exact hy,}
-end
+    (@d X M1) x y ≤ (@d X M2) x y : by {exact h,}
+    ...           < ε             : by {exact hy,}
+end  
 
 lemma ej_1_1_8  (x y z : X) (r : ℝ ) (hz : z ∈ bola x r) (hy : y ∈ bola x r) :
 d y z < 2 * r :=
@@ -255,7 +310,7 @@ begin
 end
 
 lemma ej_1_1_14 (X : Type) (M1 M2 : espacio_metrico X) : espacio_metrico X := 
-{ d := λ x y, max (@d X M1 x y) (@d X M2 x y),
+{ d := λ x y, max ((@d X M1) x y) ((@d X M2) x y),
   d1 := begin
     intros x y,
     simp,
@@ -273,7 +328,7 @@ lemma ej_1_1_14 (X : Type) (M1 M2 : espacio_metrico X) : espacio_metrico X :=
       {
         cases h with h1 h2,
         rw d2 at h1,
-        exact h1
+        exact h1,
       },
     },
     {
@@ -302,6 +357,10 @@ lemma ej_1_1_14 (X : Type) (M1 M2 : espacio_metrico X) : espacio_metrico X :=
       linarith,
     },
   end }
+
+
+--------------------------------------------------------------------------------------------------------
+
 
 
 /-
