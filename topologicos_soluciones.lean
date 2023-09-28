@@ -117,7 +117,7 @@ def indiscreta_solucion (X : Type) : espacio_topologico X :=
     {
       left,
       ext,
-      simp only [mem_sUnion, exists_prop, mem_empty_eq, iff_false, not_exists, not_and],
+      simp ,
       intros U hU hx,
       specialize h hU,
       cases h,
@@ -191,18 +191,18 @@ def punto_incluido_solucion (X : Type) (x : X) : espacio_topologico X :=
   end,
   abierto_interseccion := 
   begin
-    simp only [union_singleton, mem_insert_iff, mem_set_of_eq, mem_inter_eq],
+    simp,
     intros U V hU hV,
     cases hU,
     {
       rw hU,
-      simp only [empty_inter, mem_empty_eq, false_and, or_false],
+      simp,
     },
     {
       cases hV,
       {
         rw hV,
-        simp only [inter_empty, mem_empty_eq, and_false, or_false],
+        simp ,
       },
       {
         right,
