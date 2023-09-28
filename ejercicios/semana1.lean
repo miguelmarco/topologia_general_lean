@@ -63,7 +63,8 @@ instance : espacio_metrico ℝ :=
 Sea (X,d) un espacio métrico, demuestra que `x ∈ B(y, r) ↔ y ∈ B(x, r)`  
 -/
 
-lemma ejer_1_1_6 : ∀ (x y : X) (r > 0), x ∈ bola y r ↔ y ∈ bola x r :=
+lemma ejer_1_1_6 : 
+∀ (x y : X) (r > 0), x ∈ bola y r ↔ y ∈ bola x r :=
 begin
   sorry,
 end

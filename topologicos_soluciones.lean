@@ -464,13 +464,13 @@ def conumerable_solucion (X : Type) : espacio_topologico X :=
 example (X Y : Type) [espacio_topologico X] (f : X → Y) : @continua _ _ _ (indiscreta Y) f:=
 begin
   intros U hU,
+  simp at *,
   cases hU,
   {
     rw hU,
     apply abierto_vacio,
   },
   {
-    simp only [set.mem_singleton_iff] at hU,
     rw hU,
     exact abierto_total,
   }
@@ -480,5 +480,7 @@ end
 lemma identidad_continua_solucion : continua (identidad : X → X) :=
 begin
   intro U,
-  simp only [identidad_preimagen, imp_self],
+  intro hU,
+  simp,
+  exact hU,
 end

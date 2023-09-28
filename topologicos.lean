@@ -154,13 +154,18 @@ instance topologia_metrico {X : Type} [metricos.espacio_metrico X] : espacio_top
   end
 }
 
+
+
+
 /-
 Demostramos un resultado trivial para poder usarlo más adelante
 -/
+@[simp]
 lemma topologia_metrico_def {X : Type} [metricos.espacio_metrico X] : abiertos = {U : set X | ∀ x ∈ U, metricos.entorno x U} :=
 begin
   refl,
 end
+
 
 
 /-
@@ -189,6 +194,20 @@ def discreta (X : Type) : espacio_topologico X :=
   end
 }
 
+/-
+Como antes, demostramos un lema trivial para usarlo con el simplificador
+-/
+@[simp]
+lemma discreta_sii (X : Type) (U : set X) : U ∈ @abiertos X (discreta X) ↔ true :=
+begin
+  refl,
+end
+
+@[simp]
+lemma abiertos_discreta_def (X : Type) : @abiertos X (discreta X) = (univ : set (set X)) :=
+begin
+  refl,
+end 
 
 def indiscreta (X : Type) : espacio_topologico X :=
 { abiertos := {∅ , univ },
@@ -210,6 +229,14 @@ def indiscreta (X : Type) : espacio_topologico X :=
   end
 }
 
+
+@[simp]
+lemma abiertos_indiscreta_def (X : Type) : @abiertos X (indiscreta X) = {∅ , univ} :=
+begin
+  refl,
+end
+
+
 def punto_incluido (X : Type) (x : X) : espacio_topologico X :=
 { abiertos := {U : set X | x ∈ U} ∪ {∅},
   abierto_total := 
@@ -230,10 +257,19 @@ def punto_incluido (X : Type) (x : X) : espacio_topologico X :=
   end, 
 }
 
+
+@[simp]
+lemma abiertos_punto_incluido_def (X : Type) (x : X) : 
+@abiertos X (punto_incluido X x) = {U  | x ∈ U} ∪ {∅}:=
+begin
+  refl,
+end
+
+
 -- para demostrar este ejercicio, puede ser útil usar la táctica `choose`
 -- y el lema 
 -- `finite.dependent_image : F.finite →  ∀ (g : Π (x : X), x ∈ F → Y), {y : Y | ∃ (x : X) (hx : x ∈ F), y = F x hx}.finite`
-def imagen_inversa (X Y : Type) [τY : espacio_topologico Y] (f : X → Y) : espacio_topologico X :=
+def imagen_inversa {X Y : Type} [τY : espacio_topologico Y] (f : X → Y) : espacio_topologico X :=
 { abiertos := {(f ⁻¹' V) | V ∈ τY.abiertos},
   abierto_total := 
   begin
@@ -253,7 +289,16 @@ def imagen_inversa (X Y : Type) [τY : espacio_topologico Y] (f : X → Y) : esp
   end
 }
 
-def imagen_directa (X Y: Type) [τX :espacio_topologico X] (f : X → Y): espacio_topologico Y :=
+
+
+@[simp]
+lemma abiertos_imagen_inversa_def (X Y : Type) [Ty : espacio_topologico Y] (f : X → Y) : 
+@abiertos X (imagen_inversa f) = {(f ⁻¹' V) | V ∈ Ty.abiertos}:=
+begin
+  refl,
+end
+
+def imagen_directa {X Y: Type} [τX :espacio_topologico X] (f : X → Y): espacio_topologico Y :=
 { abiertos := {V : set Y | f ⁻¹' V ∈ τX.abiertos},
   abierto_total := 
   begin
@@ -273,6 +318,14 @@ def imagen_directa (X Y: Type) [τX :espacio_topologico X] (f : X → Y): espaci
   end
 }
 
+
+@[simp]
+lemma abiertos_imagen_directa_def (X Y : Type) [Tx : espacio_topologico X] (f : X → Y) : 
+@abiertos Y (imagen_directa f) =  {V : set Y | f ⁻¹' V ∈ Tx.abiertos}:=
+begin
+  refl,
+end
+
 def cofinita (X : Type) : espacio_topologico X :=
 { abiertos := {U : set X | set.finite Uᶜ } ∪ {∅},
   abierto_total := 
@@ -291,6 +344,13 @@ def cofinita (X : Type) : espacio_topologico X :=
   begin
     sorry,
   end }
+
+@[simp]
+lemma abiertos_cofinita_def  {X : Type}:
+(@abiertos  X (cofinita X)) =  {U : set X | set.finite Uᶜ } ∪ {∅} :=
+begin
+  refl,
+end
 
 /-
 Para demostrar que la topología conumerable es una topología, 
@@ -328,6 +388,12 @@ def conumerable (X : Type) : espacio_topologico X :=
   end
 }
 
+@[simp]
+lemma abiertos_conumerable_def {X : Type}  :
+@abiertos X (conumerable X) = {U | set.countable Uᶜ} ∪ {∅}  :=
+begin
+  refl,
+end
 
 -- A partir de ahora, vamos a fijar que `X, Y, Z` denotarán conjuntos con 
 -- estructura de espacio topológico
