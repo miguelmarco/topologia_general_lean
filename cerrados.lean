@@ -6,7 +6,7 @@ open function
 open topologicos
 open topologicos.espacio_topologico
 
-
+namespace topologicos
 /-
 En este archivo `X` denotará un espacio topológico
 -/
@@ -17,6 +17,7 @@ variables {X : Type} [espacio_topologico X]
 Un conjunto es cerrado si su complementario es abierto.
 Definimos también el conjunto de los cerrados.
 -/
+
 
 def cerrado (C  : set X) := abierto Cᶜ 
 def cerrados : set (set X):= cerrado 
@@ -279,6 +280,7 @@ begin
   }
 end
 
+
 /-
 # Ejercicios
 -/
@@ -312,3 +314,6 @@ begin
 end
 
 end ejercicios_metricos
+
+end topologicos
+

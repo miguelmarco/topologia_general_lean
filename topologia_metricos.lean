@@ -188,13 +188,12 @@ lemma carac_equivalentes  {X : Type} (D1  D2 : espacio_metrico X) : metricas_equ
     split,
     {
       intros x r1 hr1,
-      have hab2 :  (@abierto X T2) ((@bola X D2) x r1),
+      have hab2 :  (@abierto X T1) ((@bola X D2) x r1),
       {
+        rw  hT1T2,
         apply metricos.bola_abierta ,
         exact hr1,
       },
-      simp at hab2,
-      rw ← hT1T2 at hab2,
       specialize hab2 x,
       simp   at hab2,
       specialize hab2 _,

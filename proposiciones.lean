@@ -45,7 +45,7 @@ example (P : Prop) : P → P :=
 begin
   intro hp,       -- tomamos el 'input'
   exact hp,       -- devolvemos la misma cosa
-exact
+end
 
 
 -- Otro ejemplo en la misma línea.  Si queremos demostrar una implicación, 

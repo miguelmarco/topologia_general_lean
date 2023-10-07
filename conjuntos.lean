@@ -306,7 +306,7 @@ begin
       assumption,
     },
     rw ← hV2 at hU2, -- tenemos que usar que U es el complementario de V
-    simp only [set.not_not_mem, set.mem_compl_eq] at hU2,  -- no estar en el complementario de V
+    simp  at hU2,  -- no estar en el complementario de V
     -- es lo mismo que estar en V
     exact hU2,
   },

@@ -427,6 +427,24 @@ begin
   },
 end
 
+lemma existe_topologia_base_sii_B1_B2 (X : Type) (B : set (set X)) : (∃ (τ : espacio_topologico X), @base X τ B) ↔ B1 B ∧ B2 B :=
+begin
+  split,
+  {
+    intro h,
+    cases h with τ hB,
+    apply @propiedades_base X τ, 
+    exact hB,
+  },
+  {
+    intro h,
+    cases h with hB1 hB2,
+    let τ := topologia_generada B hB1 hB2,
+    use τ,
+    apply @base_de_topologia_generada X τ,
+  }
+end
+
 lemma prop_2_2_8 (ℬ ℬ': set (set X)) (h1 : base ℬ) (hab : ℬ' ⊆ abiertos) :
  base ℬ' ↔ ∀ B ∈ ℬ, ∀ x ∈ B, ∃ B' ∈ ℬ', B' ⊆ B ∧ x ∈ B' :=
 begin
@@ -526,7 +544,7 @@ begin
     ext x,
     simp,
     use ∅,
-    simp only [mem_empty_eq, is_empty.forall_iff, forall_const, and_true],
+    simp,
     split,
     {
       tauto,
@@ -537,7 +555,7 @@ begin
   },
   {
     intros B1 B2 hB1 hB2 x hx,
-    simp only [exists_prop, mem_set_of_eq, subset_inter_iff, exists_exists_and_eq_and, mem_sInter, mem_inter_eq] at *,
+    simp  at *,
     cases hB1 with S1 hS1,
     cases hS1 with hS1fin hS1B1,
     cases hS1fin with hS1S hS1fin,
