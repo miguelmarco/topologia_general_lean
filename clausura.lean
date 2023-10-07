@@ -1,11 +1,12 @@
 import .topologicos
+import .cerrados
 import .conjuntos
 
 noncomputable theory
 
 open topologicos topologicos.espacio_topologico 
 
-namespace clausura
+
 
 variables {X : Type} [espacio_topologico X]
 
@@ -57,6 +58,33 @@ begin
   },
 end
 
+/-
+Vamos a demostrar un lema sencillo que luego usaremos:
+-/
+
+lemma contenido_sii_interseccion_compl_vacio (X : Type) (A B : set X) : A ⊆ Bᶜ ↔ A ∩ B = ∅ :=
+begin
+  split,
+  {
+    intro h,
+    ext x,
+    simp,
+    apply h,
+  },
+  {
+    intro h,
+    intros x hxa,
+    intro hxb,
+    have hx : x ∈ A ∩ B,
+    {
+      split,
+      exact hxa,
+      exact hxb,
+    },
+    rw h at hx,
+    exact hx,
+  }
+end
 
 
 @[simp]
@@ -91,7 +119,8 @@ begin
     by_contradiction hxnoenV,
     specialize h hxnoenV,
     apply h,
-    rw contenido_sii_interseccion_compl_vacio at hUV,
+    rw ← contenido_sii_interseccion_compl_vacio ,
+    simp,
     exact hUV,
   }
 end
@@ -151,37 +180,54 @@ begin
       repeat { apply clausura_cerrado, },
     },
     {
-      apply union_contenida_union,
-      repeat {apply clausura_contiene,},
+      intros x hx,
+      cases hx with hxa hxb,
+      {
+        left,
+        apply clausura_contiene,
+        exact hxa,
+      },
+      {
+        right,
+        apply clausura_contiene,
+        exact hxb,
+      },
     },
   },
   {
-    rw union_contenido,
-    split,
-    repeat {
-      apply clausura_monotona,
-      simp,
+    intros x hx,
+    cases hx,
+    {
+    calc 
+      x   ∈   clausura  A        : by {exact hx,}
+      ... ⊆   clausura  (A ∪ B)  : by {simp [clausura_monotona],}
+    },
+    {
+    calc 
+      x   ∈   clausura  B        : by {exact hx,}
+      ... ⊆   clausura  (A ∪ B)  : by {simp [clausura_monotona],}
     },
   }
 end
 
 lemma clausura_inter (A B : set X) : clausura (A ∩ B) ⊆ clausura A ∩ clausura B :=
 begin
-  rw contenido_interseccion,
+  intros x hx,
   split,
-  repeat {
-    apply clausura_monotona,
-    simp,
+  {
+    calc 
+      x   ∈   clausura ( A ∩ B ) : by {exact hx,}
+      ... ⊆   clausura A         : by {simp [clausura_monotona],}
+  },
+  {
+    calc 
+      x   ∈   clausura ( A ∩ B ) : by {exact hx,}
+      ... ⊆   clausura B         : by {simp [clausura_monotona],}
   },
 end
 
 def denso (A : set X) := clausura A = set.univ
 
-end clausura
-
-namespace interior
-
-variables {X : Type} [espacio_topologico X]
 
 def interior (A : set X ) : set X := ⋃₀ {S ∈ abiertos | S ⊆ A}
 
@@ -270,8 +316,18 @@ begin
     },
   },
   {
-    apply union_contenida_union,
-    repeat { apply interior_contenido,  },
+    intros x hx,
+    cases hx,
+    {
+      left,
+      apply interior_contenido,
+      exact hx,
+    },
+    {
+      right,
+      apply interior_contenido,
+      exact hx,
+    }
   }
 end
 
@@ -279,38 +335,40 @@ lemma interior_interseccion (A B : set X) : interior (A ∩ B) = interior A ∩ 
 begin
   apply doble_contenido,
   {
-    rw contenido_interseccion,
+    intros x hx,
     split,
     {
-      apply interior_monotono,
-      apply interseccion_contenida_izda,
+      calc 
+        x    ∈ interior (A ∩ B )   : by {exact hx,}
+        ...  ⊆ interior A          : by {simp [interior_monotono],}
     },
     {
-      apply interior_monotono,
-      apply interseccion_contenida_derecha,
+      calc 
+        x    ∈ interior (A ∩ B )   : by {exact hx,}
+        ...  ⊆ interior B          : by {simp [interior_monotono],}
     },
   },
   {
     apply interior_mayor_abierto,
     {
-      apply abierto_interseccion_2,
+      apply abierto_interseccion,
       repeat {apply interior_abierto, },
     },
     {
-      rw contenido_interseccion,
+      intros x hx,
+      cases hx with hxa hxb,
       split,
       {
         calc 
-          interior A ∩ interior B ⊆  interior A : by {apply interseccion_contenida_izda,}
-          ...                     ⊆   A         : by {apply interior_contenido,}
+          x    ∈   interior A : by {exact hxa,}
+          ...  ⊆   A          : by {apply interior_contenido,}
       },
       {
         calc
-          interior A ∩ interior B ⊆  interior B : by {apply interseccion_contenida_derecha,}
-          ...                     ⊆   B         : by {apply interior_contenido,}
+          x    ∈  interior B : by {exact hxb,}
+          ...  ⊆   B         : by {apply interior_contenido,}
       },
     },
   },
 end
 
-end interior

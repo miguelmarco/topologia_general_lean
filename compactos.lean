@@ -1,4 +1,5 @@
 import .topologicos
+import .cerrados
 
 import tactic
 
