@@ -214,3 +214,133 @@ begin
   },
 end
 
+lemma  lema1 (n m : ℕ ) (h : n < m) (hn : 0 < n) (hm : 0 < m) : 1 / ((n: ℝ) * (n + 1)) ≤  1 / (n : ℝ ) - 1 / (m : ℝ ) :=
+begin
+  have haux : 1 / ((n : ℝ )* (n + 1)) =  1 / n - 1 / (n + 1),
+  {
+    rw div_sub_div,
+    norm_num,
+    repeat {norm_cast, linarith},
+  },
+  rw haux,
+  rw sub_le_sub_iff_left,
+  apply div_le_div,
+  repeat {norm_num,},
+  repeat {norm_cast, linarith},
+end
+
+lemma  lema2 (n m : ℕ ) (h : m < n) (hn : 0 < n) (hm : 0 < m) : 1 / ((n: ℝ) * (n + 1)) ≤  1 / (m : ℝ ) - 1 / (n : ℝ ) :=
+begin
+  have haux :  (1 / ((n : ℝ )*(n+1))) = 1 / n - 1 / (n + 1),
+  {
+    rw div_sub_div,
+    rw div_eq_div_iff,
+    ring_nf,
+      repeat {
+        norm_cast,
+        simp only [nat.mul_eq_zero, nat.succ_ne_zero, or_false],
+        linarith,
+      },
+      repeat {
+        norm_cast,
+        linarith,
+      },
+  },
+  rw haux,
+  rw [div_sub_div],
+  rw [div_sub_div],
+  apply div_le_div,
+  any_goals {norm_cast, linarith,},
+  {
+    rw le_sub_iff_add_le,
+    norm_cast,
+    linarith,
+  },
+  {
+    rw sub_le_sub_iff,
+    norm_cast,
+    linarith,
+  },
+  {
+    norm_cast,
+    apply mul_pos,
+    exact hm,
+    exact hn,
+  },
+  {
+    apply mul_le_mul,
+    repeat {norm_cast, linarith,},
+  },
+end
+
+def Y := { (1 / ((↑n : ℝ) + 1)) | (n : ℕ ) }
+
+example : topologia_inducida Y = discreta Y :=
+begin
+  rw ejer_2_1_3,
+  intro x,
+  cases x with x hx,
+  cases hx with n hn,
+  use metricos.bola x ( 1 / ((n + 1) * (n + 2))),
+  split,
+  {
+    apply metricos.bola_abierta,
+    rw gt_iff_lt,
+    rw lt_div_iff,
+    norm_num,
+    apply mul_pos,
+    repeat {
+      norm_cast,
+      linarith,
+    },
+  },
+  {
+    ext y,
+    split,
+    {
+      intro h,
+      cases y with y hy,
+      cases hy with m hm,
+      simp only [metricos.espacio_metrico.d, abs_lt, ←hn, ←hm, pert_restringe_def, subtype.coe_mk,
+  metricos.bola_carac, neg_lt_sub_iff_lt_add, sub_lt_iff_lt_add] at h,
+      cases h with h1 h2,
+      by_cases hcas : n ≤ m,
+      {
+        rw le_iff_lt_or_eq at hcas,
+        cases hcas,
+        {
+          have haux := lema1 (n + 1) (m + 1) _  _  _,          
+          {
+            norm_num at haux,
+            ring_nf at *,
+            linarith, 
+          },
+          repeat {linarith},
+        },
+        {
+          simp only [set.mem_singleton_iff, subtype.mk_eq_mk],
+          cases hcas,
+          rw hm at hn,
+          exact hn,
+        }
+      },
+      {
+        rw  not_le at hcas,
+        have haux2 := lema2 (n + 1) (m + 1) _  _ _ ,
+        norm_cast at *,
+        ring_nf at *,
+        repeat {linarith,},
+      },
+    },
+    {
+      intro hy,
+      cases hy,
+      simp only [metricos.bola_carac, mul_inv_rev,  metricos.distancia_cero, pert_restringe_def, subtype.coe_mk],
+      apply div_pos,
+        norm_num,
+      norm_cast,
+      apply mul_pos,
+      repeat {linarith,},
+    },
+  },
+ end
