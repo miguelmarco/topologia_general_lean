@@ -29,7 +29,7 @@ Luego están los temas de topología propiamente dicha:
 - [subespacios](subespacios.lean)
 - [aplicaciones abiertas y cerradas](aplicaciones_abiertas.lean)
 - [entornos](entornos.lean)
-- [clausura e interior](clausura.lean)
+- [clausura](clausura.lean) e [interior](interior.lean)
 
 ## Agradecimientos
 
