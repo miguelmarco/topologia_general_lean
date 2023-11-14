@@ -7,6 +7,8 @@ noncomputable theory
 
 open topologicos topologicos.espacio_topologico 
 
+namespace topologicos
+
 /-
 En lo sucesivo, `X` será un espacio topológico.
 -/
@@ -36,6 +38,7 @@ begin
   unfold clausura,
   simp only [set.mem_sInter, set.mem_sep_iff, cerrados_def, and_imp, cerrado_def],
 end
+
 
 /-
 ## Propiedades de la clausura:
@@ -266,6 +269,8 @@ begin
   }
 end
 
+
+
 /-
 ## Proposición 3.2.4.a
 Un punto está en la clausura de un conjunto si todo abierto que lo contenga interseca al conjunto.
@@ -290,7 +295,7 @@ begin
     {
       dsimp,
       rw contenido_sii_interseccion_compl_vacio,
-      simp only [compl_compl,hintervac],
+      assumption,
     },
   },
   {
@@ -316,9 +321,9 @@ Un punto está en la clausura de un conjunto si todo entorno suyo interseca al c
 @[simp]
 lemma clausura_caracterizacion_entorno (U : set X) (x : X) : x ∈ clausura U ↔ ∀ V , entorno x V → U ∩ V ≠ ∅ :=
 begin
-  rw clausura_caracterizacion,
   split,
   {
+    rw clausura_caracterizacion,
     intros h V hV,
     cases hV with W hW,
     cases hW with hWab hW2,
@@ -345,11 +350,13 @@ begin
   },
   {
     intro h,
-    intros V hV hxV,
+    by_contradiction hn,
+    rw en_clausura_sii_no_entorno at hn,
+    simp at hn,
+    specialize h _ hn,
     apply h,
-    use V,
-    simp [hxV ,hV],
-  },
+    simp,
+  }
 end
 
 /-
@@ -370,24 +377,13 @@ begin
  {
   intro h,
   intros U hU hUemp,
-  intro hn,
+  rw no_vacio_sii_existe_elemento at hUemp,
   unfold denso at h,
-  unfold clausura at h,
-  simp only [set.sInter_eq_univ, set.mem_sep_iff, cerrados_def, abierto_def, and_imp] at h,
-  specialize h Uᶜ,
-  simp only [compl_compl, set.compl_univ_iff] at h,
-  specialize h hU,
-  apply hUemp,
-  apply h,
-  intros x hxA hxU,
-  have hxin : x ∈ A ∩ U,
-    {
-      split,
-        assumption,
-        assumption,
-    },
-    rw hn at hxin,
-    exact hxin,
+  cases hUemp with x hx,
+  have hxA : x ∈ clausura A,
+    { simp [h], },
+  rw clausura_caracterizacion at hxA,
+  apply hxA U hU hx,
  },
  {
   intro h,
@@ -395,158 +391,15 @@ begin
   ext x,
   simp only [set.mem_univ, iff_true, clausura_caracterizacion],
   intros U hU hxU,
-  apply h,
+  apply h U hU,
   {
-    exact hU,
-  },
-  {
-    intro hn,
-    rw hn at hxU,
+    rw no_vacio_sii_existe_elemento,
+    use x,
     exact hxU,
   },
  },
 end 
 
-def interior (A : set X ) : set X := ⋃₀ {S ∈ abiertos | S ⊆ A}
-
-lemma interior_def (A : set X) : interior A = ⋃₀ {S ∈ abiertos | S ⊆ A} :=
-begin
-  refl,
-end
 
 
-lemma interior_abierto (A : set X) : abierto (interior A ) :=
-begin
-  apply abierto_union,
-  intros S hS,
-  exact hS.1,
-end
-
-lemma interior_contenido (A : set X) : interior A ⊆ A :=
-begin
-  apply set.sUnion_subset,
-  intros S hS,
-  exact hS.2,
-end
-
-lemma interior_mayor_abierto (A U : set X) (hU : abierto U) (hUA : U ⊆ A) : U ⊆ interior A :=
-begin
-  intros x hx,
-  use U,
-  split,
-  split,
-  all_goals { assumption},
-end
-
-@[simp]
-lemma interior_caracterizacion (A : set X) (x : X) : x ∈ interior A ↔ ∃ U ∈ (abiertos: set (set X)), U ⊆ A ∧ x ∈ U :=
-begin
-  simp [interior_def],
-  tauto,
-end
-
-lemma interior_monotono (A B : set X) (hAB : A ⊆ B) : interior A ⊆ interior B :=
-begin
-  apply set.sUnion_subset_sUnion,
-  intros S hS,
-  cases hS with hSab hSA,
-  split, assumption,
-  tauto,
-end
-
-lemma interior_eq_sii_abierto (A : set X) :    interior A = A  ↔ abierto A :=
-begin
-  split,
-    {
-    intro h,
-    rw ← h,
-    apply interior_abierto,
-  },
-  {
-    intro hA,
-    apply doble_contenido,
-    {
-      apply interior_contenido,
-    },
-    {
-      apply interior_mayor_abierto,
-      exact hA,
-      tauto,
-    },
-  },
-end
-
-@[simp]
-lemma interior_interior (A : set X ) : interior (interior A ) = interior A :=
-begin
-  rw interior_eq_sii_abierto,
-  apply interior_abierto,
-end
-
-
-lemma interior_union (A B : set X) : interior A ∪ interior B ⊆ interior (A ∪ B ) :=
-begin
-  apply interior_mayor_abierto,
-  {
-    apply abierto_union_2,
-    repeat {
-      apply interior_abierto,
-    },
-  },
-  {
-    intros x hx,
-    cases hx,
-    {
-      left,
-      apply interior_contenido,
-      exact hx,
-    },
-    {
-      right,
-      apply interior_contenido,
-      exact hx,
-    }
-  }
-end
-
-lemma interior_interseccion (A B : set X) : interior (A ∩ B) = interior A ∩ interior B :=
-begin
-  apply doble_contenido,
-  {
-    intros x hx,
-    split,
-    {
-      calc 
-        x    ∈ interior (A ∩ B )   : by {exact hx,}
-        ...  ⊆ interior A          : by {simp [interior_monotono],}
-    },
-    {
-      calc 
-        x    ∈ interior (A ∩ B )   : by {exact hx,}
-        ...  ⊆ interior B          : by {simp [interior_monotono],}
-    },
-  },
-  {
-    apply interior_mayor_abierto,
-    {
-      apply abierto_interseccion,
-      repeat {apply interior_abierto, },
-    },
-    {
-      intros x hx,
-      cases hx with hxa hxb,
-      split,
-      {
-        calc 
-          x    ∈   interior A : by {exact hxa,}
-          ...  ⊆   A          : by {apply interior_contenido,}
-      },
-      {
-        calc
-          x    ∈  interior B : by {exact hxb,}
-          ...  ⊆   B         : by {apply interior_contenido,}
-      },
-    },
-  },
-end
-
+end topologicos
