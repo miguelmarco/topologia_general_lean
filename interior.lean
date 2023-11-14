@@ -1002,6 +1002,4 @@ begin
   simp only [set.compl_inter_self, eq_self_iff_true, set.inter_empty],
 end
 
-
-
 end topologicos
