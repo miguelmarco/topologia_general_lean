@@ -88,6 +88,7 @@ begin
   refl,
 end
 
+
 @[simp]
 lemma complemento_interseccion {X : Type} (A B : set X) : (A ∩ B)ᶜ = Aᶜ ∪ Bᶜ :=
 begin
@@ -166,6 +167,12 @@ begin
   }
 end
 
+@[simp]
+lemma no_vacio_sii_existe_elemento {X : Type} (A : set X) : A ≠ ∅ ↔ ∃ x, x ∈ A :=
+begin
+  simp [conjunto_vacio_sii_todo_elemento_no],
+end
+
 -- dos conjuntos son disjuntos si y solo si uno está contenido en el complemento del otro:
 lemma disjuntos_sii_contenido_en_complemento {X : Type} (A B : set X):
 A ∩ B =  ∅ ↔ A ⊆ Bᶜ :=
@@ -193,6 +200,8 @@ begin
     exact h hb,
   }
 end
+
+
 
 
 example {X : Type} ( A B : set X) : A ⊆ B ↔ A ∪ B = B :=
