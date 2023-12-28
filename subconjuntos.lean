@@ -123,11 +123,11 @@ end
 lemma eleva_vacio : (↑(∅ : set A) : set X) = (∅ : set X) :=
 begin
   ext x,
-  simp only [set.mem_empty_iff_false, iff_false],
+  simp only [set.mem_empty_eq, iff_false],
   intro h,
   cases h with y hy,
   cases hy with hy1 hy2,
-  cases hy1,
+  exact hy1,
 end
 
 @[simp]
