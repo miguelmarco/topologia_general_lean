@@ -6,10 +6,13 @@ que formalizan (la mayor parte de) las definiciones y resultados que se dan en e
 
 ## Estructura.
 
-Por cada tema del curso hay dos archivos: uno con el título del tema, que incluye el contenido del tema y algunos ejercicios que se dejan propuestos
+En algunos temas del curso hay dos archivos: uno con el título del tema, que incluye el contenido del tema y algunos ejercicios que se dejan propuestos
 (resueltos con `sorry`); y otro con las soluciones a dichos ejercicios.
 
 Hay un archivo que sirve de ["chuleta"](resumen_tacticas.lean) con algunas tácticas y símbolos.
+
+En el directorio `ejercicios` hay algunos de los ejercicios semanales. En un archivo vienen sólo los enunciados, y en el correspondiente
+archivo de soluciones, están resueltos.
 
 Inicialmente hay algunos temas preliminares, que sirven como repaso de la teoría básica de conjuntos, y como introducción a Lean. Estos temas son:
 
@@ -30,6 +33,7 @@ Luego están los temas de topología propiamente dicha:
 - [aplicaciones abiertas y cerradas](aplicaciones_abiertas.lean)
 - [entornos](entornos.lean)
 - [clausura](clausura.lean) e [interior](interior.lean)
+- [sucesiones](sucesiones.lean)
 
 ## Agradecimientos
 
